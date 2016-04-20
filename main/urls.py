@@ -8,5 +8,5 @@ urlpatterns = [
     url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
     url(r'^post_marks/$', views.PoskMarkList.as_view()),
     url(r'^post_marks/(?P<pk>[0-9]+)/$', views.PostMarkDetail.as_view()),
-    url(r'^ajax_login/$', views.LoginView.as_view()),
+#    url(r'^ajax_login/$', views.LoginView.as_view()),
 ]

@@ -2,12 +2,7 @@ from main.models import Post, PostMark
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
-from django.views import generic
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Case, Value, When, BooleanField
+from django.db.models import Case, Value, When, BooleanField, IntegerField, Q
 
 
 import django_filters
@@ -40,17 +35,24 @@ class PostList(generics.ListCreateAPIView):
         if user.is_authenticated():
             queryset = queryset.annotate(
                 rated=Case(
-                    When(marks__user=user, then=Value(True)),
+                    When(Q(marks__user=user) | Q(user=user), then=Value(True)),
                     default=Value(False),
+                    output_field=BooleanField())).distinct()
+        else:
+            queryset = queryset.annotate(
+                rated=Case(
+                    default=Value(True),
                     output_field=BooleanField()))
         return queryset
 
     def perform_create(self, post):
         if self.request.user.is_authenticated():
             user = self.request.user
+            post.save(user=user, username=user.username)
         else:
-            user = None
-        post.save(user=user)
+            post.save()
+
+
 
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -73,10 +75,7 @@ class PoskMarkList(generics.ListCreateAPIView):
     serializer_class = PostMarkSerializer
 
     def perform_create(self, post_mark):
-        if self.request.user.is_authenticated():
-            user = self.request.user
-        else:
-            user = None
+        user = self.request.user
         post_mark.save(user=user)
 
 
@@ -85,6 +84,7 @@ class PostMarkDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostMarkSerializer
 
 
+"""
 class LoginView(generic.View):
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -98,4 +98,4 @@ class LoginView(generic.View):
             token, created = Token.objects.get_or_create(user=user)
             print(token.key)
             return JsonResponse({'user_id': user.pk, 'username': user.username, 'token_key': token.key})
-
+"""

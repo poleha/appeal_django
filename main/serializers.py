@@ -9,7 +9,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ('id', 'user', 'username', 'title', 'body', 'liked', 'disliked', 'rated', 'created')
 
-    username = serializers.ReadOnlyField(source='user.username')
+    #username = serializers.ReadOnlyField(source='user.username')
 
 class UserSerializer(serializers.ModelSerializer):
     posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
@@ -22,4 +22,4 @@ class UserSerializer(serializers.ModelSerializer):
 class PostMarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostMark
-        fields = ('id', 'post', 'mark_type', 'user', 'ip', 'session_key')
+        fields = ('id', 'post', 'mark_type', 'user')
