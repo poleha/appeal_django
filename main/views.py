@@ -10,8 +10,29 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Case, Value, When, BooleanField
 
 
+import django_filters
+from rest_framework import filters
+
+
+class PostFilter(filters.FilterSet):
+    #min_price = django_filters.NumberFilter(name="price", lookup_type='gte')
+    #max_price = django_filters.NumberFilter(name="price", lookup_type='lte')
+    #id_gt = django_filters.NumberFilter(name="id", lookup_type='gt')
+    #id_lt = django_filters.NumberFilter(name="id", lookup_type='lt')
+    id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
+    #id_lte = django_filters.NumberFilter(name="id", lookup_type='lte')
+    class Meta:
+        model = Post
+        fields = ['id_gte']
+
+
+
+
+
 class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = PostFilter
 
     def get_queryset(self):
         queryset = Post.objects.order_by('-created')
