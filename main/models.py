@@ -17,6 +17,7 @@ class Post(models.Model):
     username = models.CharField(max_length=200, blank=True)
     title = models.CharField(max_length=2000)
     body = models.TextField()
+    tags = models.ManyToManyField('Tag')
 
     @property
     def liked(self):
@@ -37,3 +38,7 @@ class PostMark(models.Model):
         if type(self).objects.filter(post=self.post, user=self.user).exists():
             raise ValidationError('Repeated vote is disabled')
         super().save(*args, **kwargs)
+
+
+class Tag(models.Model):
+    title = models.CharField(max_length=500)

@@ -1,5 +1,5 @@
-from main.models import Post, PostMark
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer
+from main.models import Post, PostMark, Tag
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, BooleanField, IntegerField, Q
@@ -82,6 +82,17 @@ class PoskMarkList(generics.ListCreateAPIView):
 class PostMarkDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = PostMark.objects.all()
     serializer_class = PostMarkSerializer
+
+
+
+class TagList(generics.ListAPIView):
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+
+
+class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
 
 """
