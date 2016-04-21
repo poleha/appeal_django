@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.forms import ValidationError
 
-# Create your models here.
-
 POST_MARK_LIKE = 1
 POST_MARK_DISLIKE = 2
 POST_MARKS = (
@@ -42,3 +40,4 @@ class PostMark(models.Model):
 
 class Tag(models.Model):
     title = models.CharField(max_length=500)
+    alias = models.CharField(max_length=500)

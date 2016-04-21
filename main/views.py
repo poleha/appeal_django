@@ -2,7 +2,7 @@ from main.models import Post, PostMark, Tag
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
-from django.db.models import Case, Value, When, BooleanField, IntegerField, Q
+from django.db.models import Case, Value, When, BooleanField, Q
 
 
 import django_filters
@@ -10,18 +10,11 @@ from rest_framework import filters
 
 
 class PostFilter(filters.FilterSet):
-    #min_price = django_filters.NumberFilter(name="price", lookup_type='gte')
-    #max_price = django_filters.NumberFilter(name="price", lookup_type='lte')
-    #id_gt = django_filters.NumberFilter(name="id", lookup_type='gt')
-    #id_lt = django_filters.NumberFilter(name="id", lookup_type='lt')
     id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
-    #id_lte = django_filters.NumberFilter(name="id", lookup_type='lte')
+    #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
     class Meta:
         model = Post
-        fields = ['id_gte']
-
-
-
+        fields = ['id_gte', 'tags__alias']
 
 
 class PostList(generics.ListCreateAPIView):

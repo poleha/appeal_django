@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.models import Post, PostMark
+from main.models import Post, PostMark, Tag
 from django.contrib.auth.models import User
 
 
@@ -29,5 +29,5 @@ class PostMarkSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post
-        fields = ('id', 'title')
+        model = Tag
+        fields = ('id', 'title', 'alias')
