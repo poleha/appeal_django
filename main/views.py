@@ -87,6 +87,26 @@ class TagDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+
+class CommentFilter(filters.FilterSet):
+    class Meta:
+        model = Comment
+        fields = ['post']
+
 class CommentList(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = CommentFilter
     queryset = Comment.objects.all()
+
+    def perform_create(self, comment):
+        if self.request.user.is_authenticated():
+            user = self.request.user
+            comment.save(user=user, username=user.username)
+        else:
+            comment.save()
+
+
+#class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+#    queryset = Tag.objects.all()
+#    serializer_class = TagSerializer

@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'^tags/$', views.TagList.as_view()),
     url(r'^tags/(?P<pk>[0-9]+)/$', views.TagDetail.as_view()),
     url(r'^comments/$', views.CommentList.as_view()),
+    #url(r'^comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view(), name='comment-detail'),
 #    url(r'^ajax_login/$', views.LoginView.as_view()),
 ]

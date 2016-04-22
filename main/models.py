@@ -46,5 +46,6 @@ class Tag(models.Model):
 class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey(Post, related_name='comments')
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, null=True, blank=True, related_name='comments')
+    username = models.CharField(max_length=200, blank=True)
     body = models.TextField()

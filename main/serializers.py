@@ -2,9 +2,15 @@ from rest_framework import serializers
 from main.models import Post, PostMark, Tag, Comment
 from django.contrib.auth.models import User
 
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'user','username', 'post', 'body', 'created')
 
 class PostSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
+
 
     class Meta:
         model = Post
@@ -12,6 +18,8 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostDetailSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
+    #comments = serializers.HyperlinkedRelatedField(many=True, view_name='comment-detail', read_only=True)
+    #comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
@@ -39,8 +47,3 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'alias')
 
 
-class CommentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Comment
-        fields = ('id', 'user', 'post', 'body', 'created')
