@@ -1,5 +1,5 @@
-from main.models import Post, PostMark, Tag
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer
+from main.models import Post, PostMark, Tag, Comment
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, PostDetailSerializer, CommentSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, BooleanField, Q
@@ -50,7 +50,7 @@ class PostList(generics.ListCreateAPIView):
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    serializer_class = PostDetailSerializer
 
 
 class UserList(generics.ListAPIView):
@@ -87,19 +87,6 @@ class TagDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
-
-"""
-class LoginView(generic.View):
-    @csrf_exempt
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        username = request.POST.get('username', None)
-        password = request.POST.get('password', None)
-        user = authenticate(username=username, password=password)
-        if user:
-            token, created = Token.objects.get_or_create(user=user)
-            print(token.key)
-            return JsonResponse({'user_id': user.pk, 'username': user.username, 'token_key': token.key})
-"""
+class CommentList(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all()

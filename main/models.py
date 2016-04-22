@@ -41,3 +41,10 @@ class PostMark(models.Model):
 class Tag(models.Model):
     title = models.CharField(max_length=500)
     alias = models.CharField(max_length=500)
+
+
+class Comment(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    post = models.ForeignKey(Post, related_name='comments')
+    user = models.ForeignKey(User)
+    body = models.TextField()
