@@ -10,6 +10,9 @@ POST_MARKS = (
 )
 
 class Post(models.Model):
+    class Meta:
+        ordering = ['-created']
+
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, null=True, blank=True, related_name='posts')
     username = models.CharField(max_length=200, blank=True)
@@ -44,6 +47,9 @@ class Tag(models.Model):
 
 
 class Comment(models.Model):
+    class Meta:
+        ordering = ['-created']
+
     created = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey(Post, related_name='comments')
     user = models.ForeignKey(User, null=True, blank=True, related_name='comments')
