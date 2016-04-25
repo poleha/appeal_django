@@ -37,7 +37,8 @@ class PostMark(models.Model):
     def save(self, *args, **kwargs):
         if type(self).objects.filter(post=self.post, user=self.user).exists():
             raise ValidationError('Repeated vote is disabled')
-        super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
 
 class Tag(models.Model):
