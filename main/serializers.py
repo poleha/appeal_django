@@ -8,13 +8,23 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'user','username', 'post', 'body', 'created')
 
+
+
 class PostSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
 
 
+    def __new__(cls, *args, **kwargs):
+        if 'data' in kwargs:
+            data = kwargs['data']
+            user = kwargs['context']['request'].user
+            if user.is_authenticated():
+                data['username'] = user.username
+        return super().__new__(cls, *args, **kwargs)
+
     class Meta:
         model = Post
-        fields = ('id', 'user', 'username', 'title', 'body', 'liked', 'disliked', 'rated', 'created', 'tags')
+        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags')
 
 class PostDetailSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
@@ -23,7 +33,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'username', 'title', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comments')
+        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comments')
 
 
 

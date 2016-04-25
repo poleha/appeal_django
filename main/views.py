@@ -17,6 +17,7 @@ class PostFilter(filters.FilterSet):
         fields = ['id_gte', 'tags__alias']
 
 
+
 class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
     filter_backends = (filters.DjangoFilterBackend,)
