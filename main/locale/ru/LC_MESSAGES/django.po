@@ -9,3 +9,14 @@ msgstr ""
 
 msgid "This list may not be empty."
 msgstr "Этот список не может быть пустым."
+
+
+msgid "Passwords not equal."
+msgstr "Пароли не совпадают."
+
+
+msgid "This email already in use."
+msgstr "Этот адрес электронной почты используется."
+
+
+

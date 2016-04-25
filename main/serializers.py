@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from main.models import Post, PostMark, Tag, Comment
 from django.contrib.auth.models import User
+from djoser import settings as djoser_settings
+from djoser import serializers as djoser_serializers
+from django.utils.translation import ugettext_lazy as _
+
 
 class CommentSerializer(serializers.ModelSerializer):
 
@@ -57,3 +61,45 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'alias')
 
 
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(style={'input_type': 'password'},
+                                     write_only=True,
+                                     validators=djoser_settings.get('PASSWORD_VALIDATORS'))
+
+    password2 = serializers.CharField(style={'input_type': 'password'},
+                                     write_only=True,
+                                     validators=djoser_settings.get('PASSWORD_VALIDATORS'))
+
+    email = serializers.EmailField(required=True)
+
+
+    def validate_email(self, value):
+        value = value.strip()
+        exists = User.objects.filter(email=value).exists()
+        if exists:
+            raise serializers.ValidationError(_("This email already in use."))
+        return value
+
+
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'password2']
+
+    def validate(self, data):
+        password2 = data.pop('password2')
+        if data['password'] != password2:
+            raise serializers.ValidationError(_("Passwords not equal."))
+
+
+        return data
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+        return user
+
+#TODO monkey patch but settings don't work
+djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer
