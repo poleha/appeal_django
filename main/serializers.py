@@ -16,7 +16,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
-
+    comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     def __new__(cls, *args, **kwargs):
         if 'data' in kwargs:
@@ -28,8 +28,10 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags')
+        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comment_count', 'comments')
 
+
+"""
 class PostDetailSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
     #comments = serializers.HyperlinkedRelatedField(many=True, view_name='comment-detail', read_only=True)
@@ -38,7 +40,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comments')
-
+"""
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -20,6 +20,10 @@ class Post(models.Model):
     tags = models.ManyToManyField('Tag')
 
     @property
+    def comment_count(self):
+        return self.comments.count()
+
+    @property
     def liked(self):
         return self.marks.filter(mark_type=POST_MARK_LIKE).count()
 
@@ -35,10 +39,8 @@ class PostMark(models.Model):
 
 
     def save(self, *args, **kwargs):
-        if type(self).objects.filter(post=self.post, user=self.user).exists():
-            raise ValidationError('Repeated vote is disabled')
-        else:
-            super().save(*args, **kwargs)
+        type(self).objects.filter(post=self.post, user=self.user).delete()
+        super().save(*args, **kwargs)
 
 
 class Tag(models.Model):

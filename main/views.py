@@ -1,5 +1,5 @@
 from main.models import Post, PostMark, Tag, Comment
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, PostDetailSerializer, CommentSerializer
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, BooleanField, Q
@@ -14,15 +14,11 @@ class PostFilter(filters.FilterSet):
     #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
     class Meta:
         model = Post
-        fields = ['id_gte', 'tags__alias']
+        fields = ['id_gte', 'tags__alias', 'id']
 
 
 
-class PostList(generics.ListCreateAPIView):
-    serializer_class = PostSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_class = PostFilter
-
+class PostViewMixin:
     def get_queryset(self):
         queryset = Post.objects.order_by('-created')
         user = self.request.user
@@ -39,6 +35,15 @@ class PostList(generics.ListCreateAPIView):
                     output_field=BooleanField()))
         return queryset
 
+
+
+class PostList(PostViewMixin, generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = PostFilter
+
+
+
     def perform_create(self, post):
         if self.request.user.is_authenticated():
             user = self.request.user
@@ -49,9 +54,8 @@ class PostList(generics.ListCreateAPIView):
 
 
 
-class PostDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostDetailSerializer
+class PostDetail(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = PostSerializer
 
 
 class UserList(generics.ListAPIView):
