@@ -15,7 +15,7 @@ class Post(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, null=True, blank=True, related_name='posts')
-    username = models.CharField(max_length=200, blank=False)
+    username = models.CharField(max_length=200, blank=True)
     body = models.TextField()
     tags = models.ManyToManyField('Tag')
 

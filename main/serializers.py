@@ -7,6 +7,15 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._user = kwargs['context']['request'].user
+
+    def validate_username(self, value):
+        if self._user.is_authenticated():
+            return self._user.username
+        else:
+            return value
 
     class Meta:
         model = Comment
@@ -18,13 +27,16 @@ class PostSerializer(serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
-    def __new__(cls, *args, **kwargs):
-        if 'data' in kwargs:
-            data = kwargs['data']
-            user = kwargs['context']['request'].user
-            if user.is_authenticated():
-                data['username'] = user.username
-        return super().__new__(cls, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._user = kwargs['context']['request'].user
+
+    def validate_username(self, value):
+        if self._user.is_authenticated():
+            return  self._user.username
+        else:
+            return value
+
 
     class Meta:
         model = Post
