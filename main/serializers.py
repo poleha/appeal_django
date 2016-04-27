@@ -6,7 +6,15 @@ from djoser import serializers as djoser_serializers
 from django.utils.translation import ugettext_lazy as _
 
 
-class CommentSerializer(serializers.ModelSerializer):
+from django.utils import timezone
+
+class DateTimeFielTZ(serializers.DateTimeField):
+
+    def to_representation(self, value):
+        value = timezone.localtime(value)
+        return super().to_representation(value)
+
+class UsernameMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._user = kwargs['context']['request'].user
@@ -14,8 +22,17 @@ class CommentSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if self._user.is_authenticated():
             return self._user.username
-        else:
+        elif value:
+            value = value.strip()
+            if User.objects.filter(username__iexact=value).exists():
+                raise serializers.ValidationError(_("This name is used by registered user."))
             return value
+        else:
+            raise serializers.ValidationError(_("This field cannot be blank."))
+
+
+class CommentSerializer(UsernameMixin, serializers.ModelSerializer):
+    created = DateTimeFielTZ(format="%d.%m.%Y %H:%M:%S", required=False, read_only=True)
 
     class Meta:
         model = Comment
@@ -23,20 +40,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 
-class PostSerializer(serializers.ModelSerializer):
+class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._user = kwargs['context']['request'].user
-
-    def validate_username(self, value):
-        if self._user.is_authenticated():
-            return  self._user.username
-        else:
-            return value
-
+    created = DateTimeFielTZ(format="%d.%m.%Y %H:%M:%S", required=False, read_only=True)
 
     class Meta:
         model = Post
