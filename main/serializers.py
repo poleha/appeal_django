@@ -36,7 +36,7 @@ class CommentSerializer(UsernameMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'user','username', 'post', 'body', 'created')
+        fields = ('id', 'user','username', 'post', 'body', 'created', 'email')
 
 
 
@@ -47,7 +47,7 @@ class PostSerializer(UsernameMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comment_count', 'comments')
+        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comment_count', 'comments', 'email')
 
 
 """

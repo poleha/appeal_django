@@ -18,6 +18,7 @@ class Post(models.Model):
     username = models.CharField(max_length=200, blank=True)
     body = models.TextField()
     tags = models.ManyToManyField('Tag')
+    email = models.EmailField(blank=True, null=True)
 
     @property
     def comment_count(self):
@@ -57,3 +58,4 @@ class Comment(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, related_name='comments')
     username = models.CharField(max_length=200, blank=True)
     body = models.TextField()
+    email = models.EmailField(blank=True, null=True)
