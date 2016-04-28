@@ -41,7 +41,8 @@ class PostMark(models.Model):
 
     def save(self, *args, **kwargs):
         type(self).objects.filter(post=self.post, user=self.user).delete()
-        super().save(*args, **kwargs)
+        if self.user != self.post.user:
+            super().save(*args, **kwargs)
 
 
 class Tag(models.Model):
