@@ -42,12 +42,14 @@ class CommentSerializer(UsernameMixin, serializers.ModelSerializer):
 
 class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     rated = serializers.BooleanField(read_only=True)
+    liked = serializers.BooleanField(read_only=True)
+    disliked = serializers.BooleanField(read_only=True)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     created = DateTimeFielTZ(format="%d.%m.%Y %H:%M:%S", required=False, read_only=True)
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comment_count', 'comments', 'email')
+        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comment_count', 'comments', 'email', 'liked', 'disliked', 'liked_count', 'disliked_count')
 
 
 """

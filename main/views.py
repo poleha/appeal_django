@@ -1,4 +1,4 @@
-from main.models import Post, PostMark, Tag, Comment
+from main.models import Post, PostMark, Tag, Comment, POST_MARK_LIKE, POST_MARK_DISLIKE
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
@@ -24,15 +24,37 @@ class PostViewMixin:
         user = self.request.user
         if user.is_authenticated():
             queryset = queryset.annotate(
+                liked=Case(
+                    When(Q(marks__user=user, marks__mark_type=POST_MARK_LIKE), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField())).distinct()
+
+            queryset = queryset.annotate(
+                disliked=Case(
+                    When(Q(marks__user=user, marks__mark_type=POST_MARK_DISLIKE), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField())).distinct()
+
+            queryset = queryset.annotate(
                 rated=Case(
-                    When(Q(marks__user=user) | Q(user=user), then=Value(True)),
+                    When(Q(marks__user=user), then=Value(True)),
                     default=Value(False),
                     output_field=BooleanField())).distinct()
         else:
             queryset = queryset.annotate(
                 rated=Case(
-                    default=Value(True),
+                    default=Value(False),
                     output_field=BooleanField()))
+            queryset = queryset.annotate(
+                liked=Case(
+                    default=Value(False),
+                    output_field=BooleanField()))
+            queryset = queryset.annotate(
+                disliked=Case(
+                    default=Value(False),
+                    output_field=BooleanField()))
+
+
         return queryset
 
 

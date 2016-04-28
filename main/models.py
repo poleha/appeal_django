@@ -25,11 +25,11 @@ class Post(models.Model):
         return self.comments.count()
 
     @property
-    def liked(self):
+    def liked_count(self):
         return self.marks.filter(mark_type=POST_MARK_LIKE).count()
 
     @property
-    def disliked(self):
+    def disliked_count(self):
         return self.marks.filter(mark_type=POST_MARK_DISLIKE).count()
 
 
