@@ -2,7 +2,7 @@ from main.models import Post, PostMark, Tag, Comment, POST_MARK_LIKE, POST_MARK_
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
-from django.db.models import Case, Value, When, BooleanField, Q
+from django.db.models import Case, Value, When, IntegerField, Q
 
 
 import django_filters
@@ -24,39 +24,21 @@ class PostViewMixin:
         user = self.request.user
         if user.is_authenticated():
             queryset = queryset.annotate(
-                liked=Case(
-                    When(Q(marks__user=user, marks__mark_type=POST_MARK_LIKE), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField())).distinct()
-
-            queryset = queryset.annotate(
-                disliked=Case(
-                    When(Q(marks__user=user, marks__mark_type=POST_MARK_DISLIKE), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField())).distinct()
-
-            queryset = queryset.annotate(
                 rated=Case(
-                    When(Q(marks__user=user), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField())).distinct()
+                    When(Q(marks__user=user, marks__mark_type=POST_MARK_LIKE), then=Value(POST_MARK_LIKE)),
+                    When(Q(marks__user=user, marks__mark_type=POST_MARK_DISLIKE), then=Value(POST_MARK_DISLIKE)),
+                    default=Value(0),
+                    output_field=IntegerField())).distinct()
+
+
         else:
             queryset = queryset.annotate(
                 rated=Case(
-                    default=Value(False),
-                    output_field=BooleanField()))
-            queryset = queryset.annotate(
-                liked=Case(
-                    default=Value(False),
-                    output_field=BooleanField()))
-            queryset = queryset.annotate(
-                disliked=Case(
-                    default=Value(False),
-                    output_field=BooleanField()))
+                    default=Value(0),
+                    output_field=IntegerField()))
 
 
         return queryset
-
 
 
 class PostList(PostViewMixin, generics.ListCreateAPIView):
@@ -64,16 +46,12 @@ class PostList(PostViewMixin, generics.ListCreateAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = PostFilter
 
-
-
     def perform_create(self, post):
         if self.request.user.is_authenticated():
             user = self.request.user
             post.save(user=user, username=user.username)
         else:
             post.save()
-
-
 
 
 class PostDetail(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -132,6 +110,36 @@ class CommentList(generics.ListCreateAPIView):
             comment.save(user=user, username=user.username)
         else:
             comment.save()
+
+class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = PostSerializer
+
+    def perform_update(self, post):
+        user = self.request.user
+        if user and user.is_authenticated():
+            mark_type = post._validated_data['rated']
+            create = True
+            if mark_type:
+                existing_marks = PostMark.objects.filter(user=user, post=post.instance)
+                if existing_marks.count() > 1:
+                    existing_marks.delete()
+                elif existing_marks.count() == 1:
+                    existing_mark = existing_marks[0]
+                    if existing_mark.mark_type == mark_type:
+                        existing_mark.delete()
+                        create = False
+                        post.instance.rated = 0
+                if create:
+                    post_mark, created = PostMark.objects.get_or_create(user=user, post=post.instance,
+                                                                        mark_type=mark_type)
+                    post.instance.rated = mark_type
+
+
+
+
+
+
+
 
 
 #class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
