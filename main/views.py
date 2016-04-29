@@ -28,7 +28,7 @@ class PostViewMixin:
                     When(Q(marks__user=user, marks__mark_type=POST_MARK_LIKE), then=Value(POST_MARK_LIKE)),
                     When(Q(marks__user=user, marks__mark_type=POST_MARK_DISLIKE), then=Value(POST_MARK_DISLIKE)),
                     default=Value(0),
-                    output_field=IntegerField())).distinct()
+                    output_field=IntegerField())).exclude(Q(marks__user=user) & Q(rated=0))
 
 
         else:
@@ -113,6 +113,7 @@ class CommentList(generics.ListCreateAPIView):
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
+
 
     def perform_update(self, post):
         user = self.request.user
