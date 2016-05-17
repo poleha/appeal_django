@@ -1,9 +1,12 @@
 from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SocialLoginSerializer
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import user_logged_in
+from djoser.serializers import TokenSerializer
 
 import django_filters
 from rest_framework import filters
@@ -147,28 +150,37 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
 
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import user_logged_in
-from djoser.serializers import TokenSerializer
+
 
 class SocialLogin(generics.GenericAPIView):
-    serializer_class = SocialLoginSerializer
 
     def post(self, request):
-        try:
-            user = User.objects.get(user_profile__vk_id=request.data['id'])
-        except:
-            user, _ = User.objects.get_or_create(username=request.data['username'])
-        user_profile, _ = UserProfile.objects.get_or_create(user=user)
-        user_profile.vk_id = request.data['id']
-        user_profile.save()
+        id = request.data['id']
+        username = request.data['username']
+        network = request.data['network']
+        if network == 'vk':
+            users_by_id = User.objects.filter(user_profile__vk_id=id)
+            if users_by_id.exists():
+                user = users_by_id[0]
+            else:
+                users_by_username = User.objects.filter(username=username)
+                k = 0
+                while users_by_username.exists():
+                    k += 1
+                    username += str(k)
+                    users_by_username = User.objects.filter(username=username)
+                user = User.objects.create(username=username)
 
-        token, _ = Token.objects.get_or_create(user=user)
-        user_logged_in.send(sender=user.__class__, request=self.request, user=user)
-        return Response(
-            data=TokenSerializer(token).data,
-            status=200,
-        )
+            user_profile, _ = UserProfile.objects.get_or_create(user=user)
+            user_profile.vk_id = id
+            user_profile.save()
+
+            token, _ = Token.objects.get_or_create(user=user)
+            user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+            return Response(
+                data=TokenSerializer(token).data,
+                status=200,
+            )
 
 
 

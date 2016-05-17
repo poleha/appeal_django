@@ -128,8 +128,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'vk_id')
 
 
-class SocialLoginSerializer(serializers.Serializer):
-    vk_id = serializers.CharField(required=False)
+#class SocialLoginSerializer(serializers.Serializer):
+#    vk_id = serializers.CharField(required=False)
 
 
 #TODO monkey patch since settings don't work
