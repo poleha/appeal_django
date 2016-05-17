@@ -60,3 +60,8 @@ class Comment(models.Model):
     username = models.CharField(max_length=200, blank=True)
     body = models.TextField()
     email = models.EmailField(blank=True, null=True)
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, related_name='user_profile')
+    vk_id = models.CharField(max_length=500, null=True, blank=True)

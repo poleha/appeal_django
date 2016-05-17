@@ -1,9 +1,9 @@
-from main.models import Post, PostMark, Tag, Comment, POST_MARK_LIKE, POST_MARK_DISLIKE
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer
+from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SocialLoginSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
-
+from rest_framework.response import Response
 
 import django_filters
 from rest_framework import filters
@@ -114,7 +114,6 @@ class CommentList(generics.ListCreateAPIView):
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
 
-
     def perform_update(self, post):
         user = self.request.user
         if user and user.is_authenticated():
@@ -136,13 +135,44 @@ class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
                     post.instance.rated = mark_type
 
 
+class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = UserProfileSerializer
+    queryset = UserProfile.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated():
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            instance = user_profile
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import user_logged_in
+from djoser.serializers import TokenSerializer
+
+class SocialLogin(generics.GenericAPIView):
+    serializer_class = SocialLoginSerializer
+
+    def post(self, request):
+        try:
+            user = User.objects.get(user_profile__vk_id=request.data['id'])
+        except:
+            user, _ = User.objects.get_or_create(username=request.data['username'])
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
+        user_profile.vk_id = request.data['id']
+        user_profile.save()
+
+        token, _ = Token.objects.get_or_create(user=user)
+        user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+        return Response(
+            data=TokenSerializer(token).data,
+            status=200,
+        )
 
 
 
 
-
-
-
-#class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+                        #class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
 #    queryset = Tag.objects.all()
 #    serializer_class = TagSerializer

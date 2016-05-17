@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.models import Post, PostMark, Tag, Comment
+from main.models import Post, PostMark, Tag, Comment, UserProfile
 from django.contrib.auth.models import User
 from djoser import settings as djoser_settings
 from djoser import serializers as djoser_serializers
@@ -122,6 +122,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             user.save(update_fields=['is_active'])
         return user
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('id', 'vk_id')
 
-#TODO monkey patch but settings don't work
+
+class SocialLoginSerializer(serializers.Serializer):
+    vk_id = serializers.CharField(required=False)
+
+
+#TODO monkey patch since settings don't work
 djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer
