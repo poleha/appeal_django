@@ -62,6 +62,17 @@ class Comment(models.Model):
     email = models.EmailField(blank=True, null=True)
 
 
+GOOGLE = 'google'
+VK = 'vk'
+FACEBOOK = 'facebook'
+
+SOCIAL_NETWORKS = (
+    (GOOGLE, 'google'),
+    (VK, 'vk'),
+    (FACEBOOK, 'facebook'),
+)
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='user_profile')
-    vk_id = models.CharField(max_length=500, null=True, blank=True)
+    external_id = models.CharField(max_length=500, null=True, blank=True)
+    network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)

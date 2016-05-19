@@ -158,33 +158,34 @@ class SocialLogin(generics.GenericAPIView):
         id = request.data['id']
         username = request.data['username']
         network = request.data['network']
-        if network == 'vk':
-            users_by_id = User.objects.filter(user_profile__vk_id=id)
-            if users_by_id.exists():
-                user = users_by_id[0]
-            else:
+        users_by_id = User.objects.filter(user_profile__external_id=id, user_profile__network=network)
+        if users_by_id.exists():
+            user = users_by_id[0]
+        else:
+            users_by_username = User.objects.filter(username=username)
+            k = 0
+            while users_by_username.exists():
+                k += 1
+                username += str(k)
                 users_by_username = User.objects.filter(username=username)
-                k = 0
-                while users_by_username.exists():
-                    k += 1
-                    username += str(k)
-                    users_by_username = User.objects.filter(username=username)
-                user = User.objects.create(username=username)
+            user = User.objects.create(username=username)
 
-            user_profile, _ = UserProfile.objects.get_or_create(user=user)
-            user_profile.vk_id = id
-            user_profile.save()
+        user_profile, _ = UserProfile.objects.get_or_create(user=user)
+        user_profile.external_id = id
+        user_profile.network = network
+        user_profile.save()
 
-            token, _ = Token.objects.get_or_create(user=user)
-            user_logged_in.send(sender=user.__class__, request=self.request, user=user)
-            return Response(
-                data=TokenSerializer(token).data,
-                status=200,
-            )
+        token, _ = Token.objects.get_or_create(user=user)
+        user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+        return Response(
+            data=TokenSerializer(token).data,
+            status=200,
+        )
 
 
 
 
-                        #class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+
+                #class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
 #    queryset = Tag.objects.all()
 #    serializer_class = TagSerializer
