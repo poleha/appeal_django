@@ -14,10 +14,11 @@ from rest_framework import filters
 
 class PostFilter(filters.FilterSet):
     id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
+    body = django_filters.CharFilter(name="body", lookup_type='icontains')
     #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
     class Meta:
         model = Post
-        fields = ['id_gte', 'tags__alias', 'id']
+        fields = ['id_gte', 'tags__alias', 'id', 'body']
 
 
 
@@ -40,7 +41,7 @@ class PostViewMixin:
                     default=Value(0),
                     output_field=IntegerField()))
 
-
+        queryset = queryset.distinct()
         return queryset
 
 
