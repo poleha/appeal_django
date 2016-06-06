@@ -38,7 +38,6 @@ class PostMark(models.Model):
     mark_type = models.PositiveIntegerField(choices=POST_MARKS)
     user = models.ForeignKey(User, blank=True)
 
-
     def save(self, *args, **kwargs):
         type(self).objects.filter(post=self.post, user=self.user).delete()
         if self.user != self.post.user:
@@ -46,8 +45,12 @@ class PostMark(models.Model):
 
 
 class Tag(models.Model):
+    class Meta:
+        ordering = ('weight', 'title')
+
     title = models.CharField(max_length=500)
     alias = models.CharField(max_length=500)
+    weight = models.IntegerField(default=0, blank=True)
 
 
 class Comment(models.Model):
