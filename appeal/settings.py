@@ -34,37 +34,8 @@ except:
 
 if HOSTNAME in ['ubuntu', 'kulik']:
     DEBUG = True
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'appeal',
-            'USER': 'kulik',
-            'PASSWORD': 'ZaX369Exn',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
-            'CONN_MAX_AGE': 500,
-        },
-
-    }
-
-
 else:
     DEBUG = False
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'ddnatb4f12k1lo',
-            'USER': 'incgaqwxwzicgw',
-            'PASSWORD': 'lH3s9wVsMM_D6OT7xd9GotgDmc',
-           'HOST': 'ec2-174-129-29-118.compute-1.amazonaws.com',
-           'PORT': '5432',
-            'CONN_MAX_AGE': 500,
-            },
-
-
-    }
 
 
 # Application definition
@@ -73,9 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    #'django.contrib.sessions',
+    #'django.contrib.messages',
+    #'django.contrib.staticfiles',
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
@@ -127,8 +98,18 @@ DATABASES = {
 }
 """
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'appeal',
+        'USER': 'kulik',
+        'PASSWORD': 'ZaX369Exn',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+        'CONN_MAX_AGE': 500,
+    },
 
-
+}
 
 
 # Password validation
@@ -167,10 +148,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#STATIC_URL = '/static/'
+#MEDIA_URL = '/media/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

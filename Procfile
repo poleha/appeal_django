@@ -1,1 +1,0 @@
-web: gunicorn appeal.wsgi --log-file -
