@@ -1,1 +1,1 @@
-web: gunicorn appeal.wsgi:application --log-file -
+web: gunicorn appeal.wsgi --log-file -
