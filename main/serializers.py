@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from djoser import settings as djoser_settings
 from djoser import serializers as djoser_serializers
 from django.utils.translation import ugettext_lazy as _
+from djoser.serializers import UserSerializer
 
 
 from django.utils import timezone
@@ -132,5 +133,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
 #    vk_id = serializers.CharField(required=False)
 
 
-#TODO monkey patch since settings don't work
-djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer
+class UserSerializerWithToken(UserSerializer):
+    # auth_token = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
+
+    class Meta:
+        model = User
+        fields = tuple(User.REQUIRED_FIELDS) + (
+            User._meta.pk.name,
+            User.USERNAME_FIELD,
+            'auth_token'
+        )
+        read_only_fields = (
+            User.USERNAME_FIELD,
+
+        )
+
+
+
+#djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer

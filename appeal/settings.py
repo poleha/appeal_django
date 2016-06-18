@@ -177,7 +177,6 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-"""
 DJOSER = {
     #'DOMAIN': 'frontend.com',
     #'SITE_NAME': 'Frontend',
@@ -187,6 +186,6 @@ DJOSER = {
     #'PASSWORD_VALIDATORS': [],
     'SERIALIZERS': {
         'user_registration': 'main.serializers.UserRegistrationSerializer',
+        'user': 'main.serializers.UserSerializerWithToken',
                     },
 }
-"""
