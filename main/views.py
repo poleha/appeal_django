@@ -100,7 +100,7 @@ class TagDetail(generics.RetrieveUpdateDestroyAPIView):
 class CommentFilter(filters.FilterSet):
     class Meta:
         model = Comment
-        fields = ['post']
+        fields = ['post', 'user']
 
 class CommentList(generics.ListCreateAPIView):
     serializer_class = CommentSerializer

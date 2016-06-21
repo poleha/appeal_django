@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.forms import ValidationError
 
 POST_MARK_LIKE = 1
 POST_MARK_DISLIKE = 2
