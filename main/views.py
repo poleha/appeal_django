@@ -18,7 +18,7 @@ class PostFilter(filters.FilterSet):
     #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
     class Meta:
         model = Post
-        fields = ['id_gte', 'tags__alias', 'id', 'body']
+        fields = ['id_gte', 'tags__alias', 'id', 'body', 'user']
 
 
 
