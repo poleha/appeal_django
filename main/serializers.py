@@ -15,6 +15,7 @@ class DateTimeFielTZ(serializers.DateTimeField):
         value = timezone.localtime(value)
         return super().to_representation(value)
 
+
 class UsernameMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,7 +41,6 @@ class CommentSerializer(UsernameMixin, serializers.ModelSerializer):
         fields = ('id', 'user','username', 'post', 'body', 'created', 'email')
 
 
-
 class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     rated = serializers.IntegerField(required=False)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -64,11 +64,11 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
+    #posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'posts')
+        fields = ('id', 'username', 'posts', 'comments')
 
 
 class PostMarkSerializer(serializers.ModelSerializer):

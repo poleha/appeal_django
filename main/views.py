@@ -62,8 +62,18 @@ class PostDetail(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
 
 
+class UserFilter(filters.FilterSet):
+    #id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
+    #body = django_filters.CharFilter(name="body", lookup_type='icontains')
+    #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
+    filter_class = UserFilter
+    filter_backends = (filters.DjangoFilterBackend,)
     serializer_class = UserSerializer
 
 
