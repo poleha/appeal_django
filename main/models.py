@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 POST_MARK_LIKE = 1
 POST_MARK_DISLIKE = 2
@@ -31,8 +32,28 @@ class Post(models.Model):
     def disliked_count(self):
         return self.marks.filter(mark_type=POST_MARK_DISLIKE).count()
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        PostHistory.objects.get_or_create(post=self)
+
+
+class PostHistory(models.Model):
+    post = models.ForeignKey('Post', related_name='history')
+    commented = models.DateTimeField(null=True, blank=True)
+    up_voted = models.DateTimeField(null=True, blank=True)
+    down_voted = models.DateTimeField(null=True, blank=True)
+    un_voted = models.DateTimeField(null=True, blank=True)
+    last_action = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.last_action = self.post.created
+        if self.commented:
+            self.last_action = max(self.last_action, self.commented)
+        super().save(*args, **kwargs)
+
 
 class PostMark(models.Model):
+    created = models.DateTimeField(auto_created=True)
     post = models.ForeignKey(Post, related_name='marks')
     mark_type = models.PositiveIntegerField(choices=POST_MARKS)
     user = models.ForeignKey(User, blank=True)
@@ -42,6 +63,18 @@ class PostMark(models.Model):
         if self.user != self.post.user:
             super().save(*args, **kwargs)
 
+        ph, created = PostHistory.objects.get_or_create(post=self)
+        if self.mark_type == POST_MARK_LIKE:
+            ph.up_voted = self.created
+        else:
+            ph.down_voted = self.created
+        ph.save()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        ph, created = PostHistory.objects.get_or_create(post=self.post)
+        ph.un_voted = timezone.now()
+        ph.save()
 
 class Tag(models.Model):
     class Meta:
@@ -62,6 +95,12 @@ class Comment(models.Model):
     username = models.CharField(max_length=200, blank=True)
     body = models.TextField()
     email = models.EmailField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        ph, created = PostHistory.objects.get_or_create(post=self.post)
+        ph.commented = self.created
+        ph.save()
 
 
 GOOGLE = 'google'

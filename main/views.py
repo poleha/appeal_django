@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import user_logged_in
 from djoser.serializers import TokenSerializer
-
 import django_filters
 from rest_framework import filters
 
@@ -15,16 +14,14 @@ from rest_framework import filters
 class PostFilter(filters.FilterSet):
     id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
     body = django_filters.CharFilter(name="body", lookup_type='icontains')
-    #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
     class Meta:
         model = Post
         fields = ['id_gte', 'tags__alias', 'id', 'body', 'user']
 
 
-
 class PostViewMixin:
     def get_queryset(self):
-        queryset = Post.objects.order_by('-created')
+        queryset = Post.objects.order_by('-history__last_action')
         user = self.request.user
         if user.is_authenticated():
             queryset = queryset.annotate(
@@ -33,8 +30,6 @@ class PostViewMixin:
                     When(Q(marks__user=user, marks__mark_type=POST_MARK_DISLIKE), then=Value(POST_MARK_DISLIKE)),
                     default=Value(0),
                     output_field=IntegerField())).exclude(Q(marks__user=user) & Q(rated=0))
-
-
         else:
             queryset = queryset.annotate(
                 rated=Case(

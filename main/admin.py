@@ -11,3 +11,8 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.PostHistory)
+class PostHistoryAdmin(admin.ModelAdmin):
+    pass
