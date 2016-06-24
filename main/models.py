@@ -53,7 +53,7 @@ class PostHistory(models.Model):
 
 
 class PostMark(models.Model):
-    created = models.DateTimeField(auto_created=True)
+    created = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey(Post, related_name='marks')
     mark_type = models.PositiveIntegerField(choices=POST_MARKS)
     user = models.ForeignKey(User, blank=True)
@@ -63,7 +63,7 @@ class PostMark(models.Model):
         if self.user != self.post.user:
             super().save(*args, **kwargs)
 
-        ph, created = PostHistory.objects.get_or_create(post=self)
+        ph, created = PostHistory.objects.get_or_create(post=self.post)
         if self.mark_type == POST_MARK_LIKE:
             ph.up_voted = self.created
         else:
