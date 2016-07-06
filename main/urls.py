@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^tags/$', views.TagList.as_view()),
     url(r'^tags/(?P<pk>[0-9]+)/$', views.TagDetail.as_view()),
     url(r'^comments/$', views.CommentList.as_view()),
+    url(r'^comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view()),
     url(r'^posts/(?P<pk>[0-9]+)/rate/$', views.RatePostView.as_view()),
 
     url(r'^user_profile/$', views.UserProfileDetail.as_view()),

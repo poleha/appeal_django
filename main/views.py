@@ -105,7 +105,7 @@ class TagDetail(generics.RetrieveUpdateDestroyAPIView):
 class CommentFilter(filters.FilterSet):
     class Meta:
         model = Comment
-        fields = ['post', 'user']
+        fields = ['post', 'user', 'id']
 
 class CommentList(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
@@ -119,6 +119,11 @@ class CommentList(generics.ListCreateAPIView):
             comment.save(user=user, username=user.username)
         else:
             comment.save()
+
+class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
