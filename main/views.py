@@ -53,8 +53,30 @@ class PostList(PostViewMixin, generics.ListCreateAPIView):
             post.save()
 
 
+class AuthorOnlyPermission:
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        return obj.user_id == request.user.pk
+
+class AuthorOnlyMixin(generics.GenericAPIView):
+    def get_permissions(self):
+        permissions = super().get_permissions()
+        permissions.append(AuthorOnlyPermission())
+        return permissions
+
+
 class PostDetail(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
+
+
+class AuthorOnlyPostDetail(AuthorOnlyMixin, PostDetail):
+    pass
+
 
 
 class UserFilter(filters.FilterSet):

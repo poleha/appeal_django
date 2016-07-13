@@ -3,7 +3,7 @@ from main import views
 
 urlpatterns = [
     url(r'^posts/$', views.PostList.as_view()),
-    url(r'^posts/(?P<pk>[0-9]+)/$', views.PostDetail.as_view()),
+    url(r'^posts/(?P<pk>[0-9]+)/$', views.AuthorOnlyPostDetail.as_view()),
     url(r'^users/$', views.UserList.as_view()),
     url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
     url(r'^post_marks/$', views.PoskMarkList.as_view()),
