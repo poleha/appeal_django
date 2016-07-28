@@ -146,6 +146,9 @@ class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+class AuthorOnlyCommentDetail(AuthorOnlyMixin, CommentDetail):
+    pass
+
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
