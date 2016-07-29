@@ -23,3 +23,14 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(models.PostHistory)
 class PostHistoryAdmin(admin.ModelAdmin):
     pass
+
+
+
+@admin.register(models.PostVersion)
+class PostVersionAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.CommentVersion)
+class CommentVersionAdmin(admin.ModelAdmin):
+    pass

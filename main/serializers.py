@@ -2,9 +2,9 @@ from rest_framework import serializers
 from main.models import Post, PostMark, Tag, Comment, UserProfile
 from django.contrib.auth.models import User
 from djoser import settings as djoser_settings
-from djoser import serializers as djoser_serializers
+#from djoser import serializers as djoser_serializers
 from django.utils.translation import ugettext_lazy as _
-from djoser.serializers import UserSerializer
+#from djoser.serializers import UserSerializer
 
 
 from django.utils import timezone

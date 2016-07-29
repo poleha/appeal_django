@@ -37,6 +37,17 @@ class Post(models.Model):
         PostHistory.objects.get_or_create(post=self)
 
 
+
+class PostVersion(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    post = models.ForeignKey(Post)
+    user = models.ForeignKey(User, null=True, blank=True, related_name='post_versions')
+    username = models.CharField(max_length=200, blank=True)
+    body = models.TextField()
+    tags = models.ManyToManyField('Tag')
+    email = models.EmailField(blank=True, null=True)
+
+
 class PostHistory(models.Model):
     post = models.ForeignKey('Post', related_name='history')
     commented = models.DateTimeField(null=True, blank=True)
@@ -101,6 +112,15 @@ class Comment(models.Model):
         ph, created = PostHistory.objects.get_or_create(post=self.post)
         ph.commented = self.created
         ph.save()
+
+class CommentVersion(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    comment = models.ForeignKey(Comment)
+    post = models.ForeignKey(Post, related_name='comment_versions')
+    user = models.ForeignKey(User, null=True, blank=True, related_name='comment_versions')
+    username = models.CharField(max_length=200, blank=True)
+    body = models.TextField()
+    email = models.EmailField(blank=True, null=True)
 
 
 GOOGLE = 'google'

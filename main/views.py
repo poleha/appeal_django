@@ -1,4 +1,4 @@
-from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE
+from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer
 from rest_framework import generics
 from django.contrib.auth.models import User
@@ -19,6 +19,7 @@ class ReversionMixin:
             if not self.request.user.is_anonymous():
                 reversion.set_user(self.request.user)
             return response
+
 
 
 class PostFilter(filters.FilterSet):
@@ -48,6 +49,26 @@ class PostViewMixin:
 
         queryset = queryset.distinct()
         return queryset
+
+    def save_version(self, serializer):
+        post = serializer.instance
+        post_version = PostVersion.objects.create(
+            post=post,
+            user=post.user,
+            username=post.username,
+            body=post.body,
+            email=post.email
+        )
+        for tag in post.tags.all():
+            post_version.tags.add(tag)
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.save_version(serializer)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self.save_version(serializer)
 
 
 class PostList(PostViewMixin, ReversionMixin, generics.ListCreateAPIView):
@@ -82,6 +103,7 @@ class AuthorOnlyMixin(generics.GenericAPIView):
 
 class PostDetail(PostViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
+
 
 
 class AuthorOnlyPostDetail(AuthorOnlyMixin, PostDetail):
@@ -139,7 +161,29 @@ class CommentFilter(filters.FilterSet):
         model = Comment
         fields = ['post', 'user', 'id']
 
-class CommentList(ReversionMixin, generics.ListCreateAPIView):
+class CommentViewMixin:
+    def save_version(self, serializer):
+        comment = serializer.instance
+        comment_version = CommentVersion.objects.create(
+            comment=comment,
+            post=comment.post,
+            user=comment.user,
+            username=comment.username,
+            body=comment.body,
+            email=comment.email
+        )
+
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.save_version(serializer)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self.save_version(serializer)
+
+
+class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = CommentFilter
@@ -152,7 +196,7 @@ class CommentList(ReversionMixin, generics.ListCreateAPIView):
         else:
             comment.save()
 
-class CommentDetail(ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
+class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
