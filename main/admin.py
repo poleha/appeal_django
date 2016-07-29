@@ -1,11 +1,18 @@
 from django.contrib import admin
+from reversion.admin import VersionAdmin
 from . import models
 
 # Register your models here.
 
 @admin.register(models.Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(VersionAdmin):
     pass
+
+
+@admin.register(models.Comment)
+class CommentAdmin(VersionAdmin):
+    pass
+
 
 
 @admin.register(models.Tag)

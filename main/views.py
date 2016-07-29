@@ -9,6 +9,16 @@ from django.contrib.auth import user_logged_in
 from djoser.serializers import TokenSerializer
 import django_filters
 from rest_framework import filters
+import reversion
+from django.db import transaction
+
+class ReversionMixin:
+    def dispatch(self, *args, **kwargs):
+        with transaction.atomic(), reversion.create_revision():
+            response = super().dispatch(*args, **kwargs)
+            if not self.request.user.is_anonymous():
+                reversion.set_user(self.request.user)
+            return response
 
 
 class PostFilter(filters.FilterSet):
@@ -40,7 +50,7 @@ class PostViewMixin:
         return queryset
 
 
-class PostList(PostViewMixin, generics.ListCreateAPIView):
+class PostList(PostViewMixin, ReversionMixin, generics.ListCreateAPIView):
     serializer_class = PostSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = PostFilter
@@ -70,7 +80,7 @@ class AuthorOnlyMixin(generics.GenericAPIView):
         return permissions
 
 
-class PostDetail(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
+class PostDetail(PostViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
 
 
@@ -129,7 +139,7 @@ class CommentFilter(filters.FilterSet):
         model = Comment
         fields = ['post', 'user', 'id']
 
-class CommentList(generics.ListCreateAPIView):
+class CommentList(ReversionMixin, generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = CommentFilter
@@ -142,7 +152,7 @@ class CommentList(generics.ListCreateAPIView):
         else:
             comment.save()
 
-class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+class CommentDetail(ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -217,11 +227,3 @@ class SocialLogin(generics.GenericAPIView):
             data=TokenSerializer(token).data,
             status=200,
         )
-
-
-
-
-
-                #class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
-#    queryset = Tag.objects.all()
-#    serializer_class = TagSerializer

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'main',
     'corsheaders',
+    'reversion',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -64,6 +65,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'reversion.middleware.RevisionMiddleware',
 ]
 
 ROOT_URLCONF = 'appeal.urls'
