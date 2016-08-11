@@ -11,6 +11,8 @@ import django_filters
 from rest_framework import filters
 import reversion
 from django.db import transaction
+from rest_framework.pagination import LimitOffsetPagination
+
 
 class ReversionMixin:
     def dispatch(self, *args, **kwargs):
@@ -146,9 +148,16 @@ class PostMarkDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+class UnlimitedPagination(LimitOffsetPagination):
+    default_limit = 100
+    max_limit = 100
+
+
 class TagList(generics.ListAPIView):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
+    pagination_class = UnlimitedPagination
+
 
 
 class TagDetail(generics.RetrieveUpdateDestroyAPIView):
