@@ -73,7 +73,7 @@ ROOT_URLCONF = 'appeal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'main/templates/main')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -180,8 +180,8 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_ALLOW_ALL = True
 
 DJOSER = {
-    #'DOMAIN': 'frontend.com',
-    #'SITE_NAME': 'Frontend',
+    'DOMAIN': 'qblik.ru',
+    'SITE_NAME': 'Qblik',
     #'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     #'ACTIVATION_URL': '#/activate/{uid}/{token}',
     #'SEND_ACTIVATION_EMAIL': True,

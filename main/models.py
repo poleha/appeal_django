@@ -22,6 +22,9 @@ class Post(models.Model):
     tags = models.ManyToManyField('Tag')
     email = models.EmailField(blank=True, null=True)
 
+    def __str__(self):
+        return self.body[:150]
+
     @property
     def comment_count(self):
         return self.comments.count()
@@ -33,6 +36,9 @@ class Post(models.Model):
     @property
     def disliked_count(self):
         return self.marks.filter(mark_type=POST_MARK_DISLIKE).count()
+
+    def get_absolute_url(self):
+        return '/post/{}'.format(self.id)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -115,6 +121,14 @@ class Comment(models.Model):
         ph.commented = self.created
         ph.save()
 
+
+    def get_absolute_url(self):
+        return '/post/{}'.format(self.id)
+
+
+    def __str__(self):
+        return self.body[:150]
+
 class CommentVersion(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     comment = models.ForeignKey(Comment)
@@ -140,7 +154,6 @@ class UserProfile(models.Model):
     external_id = models.CharField(max_length=500, null=True, blank=True)
     network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)
     receive_comments_email = models.BooleanField(default=True)
-
 
 
 def create_user_profile(sender, instance, created, **kwargs):

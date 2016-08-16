@@ -14,6 +14,7 @@ from django.db import transaction
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.utils import SendEmailViewMixin
 from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
 
 
 class ReversionMixin:
@@ -200,14 +201,9 @@ class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, 
     filter_class = CommentFilter
     queryset = Comment.objects.all()
 
-    token_generator = default_token_generator
-    #TODO
-    subject_template_name = 'activation_email_subject.txt'
-    plain_body_template_name = 'activation_email_body.txt'
-
-    def get_email_context(self, user):
-        context = super().get_email_context(user)
-        return context
+    subject_template_name = 'email/comments_email_subject.txt'
+    plain_body_template_name = 'email/comments_email_body.txt'
+    html_body_template_name = 'email/comments_email_body.html'
 
     def perform_create(self, serializer):
         if self.request.user.is_authenticated():
@@ -218,8 +214,28 @@ class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, 
 
         comment = serializer.instance
 
-        user = comment.post.user
-        self.send_email(**self.get_send_email_kwargs(user))
+        post_user = comment.post.user
+        user_profile = post_user.user_profile
+        if user != post_user and user_profile.receive_comments_email:
+            self.send_email(**self.get_send_email_kwargs(post_user, comment))
+
+    def get_send_email_kwargs(self, user, comment):
+        return {
+            'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            'to_email': user.email,
+            'context': self.get_email_context(comment),
+        }
+
+
+    def get_email_context(self, comment):
+        domain = settings.DJOSER.get('DOMAIN')
+        site_name = settings.DJOSER.get('SITE_NAME')
+        return {
+            'comment': comment,
+            'domain': domain,
+            'site_name': site_name,
+            'protocol': 'https' if self.request.is_secure() else 'http',
+        }
 
 
 class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
