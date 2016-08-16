@@ -12,6 +12,8 @@ from rest_framework import filters
 import reversion
 from django.db import transaction
 from rest_framework.pagination import LimitOffsetPagination
+from djoser.utils import SendEmailViewMixin
+from django.contrib.auth.tokens import default_token_generator
 
 
 class ReversionMixin:
@@ -192,22 +194,39 @@ class CommentViewMixin:
         self.save_version(serializer)
 
 
-class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView):
+class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, SendEmailViewMixin):
     serializer_class = CommentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = CommentFilter
     queryset = Comment.objects.all()
 
-    def perform_create(self, comment):
+    token_generator = default_token_generator
+    #TODO
+    subject_template_name = 'activation_email_subject.txt'
+    plain_body_template_name = 'activation_email_body.txt'
+
+    def get_email_context(self, user):
+        context = super().get_email_context(user)
+        return context
+
+    def perform_create(self, serializer):
         if self.request.user.is_authenticated():
             user = self.request.user
-            comment.save(user=user, username=user.username)
+            serializer.save(user=user, username=user.username)
         else:
-            comment.save()
+            serializer.save()
+
+        comment = serializer.instance
+
+        user = comment.post.user
+        self.send_email(**self.get_send_email_kwargs(user))
+
 
 class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+
 
 class AuthorOnlyCommentDetail(AuthorOnlyMixin, CommentDetail):
     pass
