@@ -186,6 +186,7 @@ DJOSER = {
     #'ACTIVATION_URL': '#/activate/{uid}/{token}',
     #'SEND_ACTIVATION_EMAIL': True,
     #'PASSWORD_VALIDATORS': [],
+    'SET_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
         'user_registration': 'main.serializers.UserRegistrationSerializer',
         'user': 'main.serializers.UserSerializerWithToken',
