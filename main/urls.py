@@ -14,7 +14,7 @@ urlpatterns = [
     url(r'^comments/(?P<pk>[0-9]+)/$', views.AuthorOnlyCommentDetail.as_view()),
     url(r'^posts/(?P<pk>[0-9]+)/rate/$', views.RatePostView.as_view()),
 
-    url(r'^user_profile/$', views.UserProfileDetail.as_view()),
+    url(r'^user_profile/(?P<pk>[0-9]+)/$', views.UserProfileDetail.as_view()),
     url(r'^auth/social_login/$', views.SocialLogin.as_view()),
 
     #url(r'^comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view(), name='comment-detail'),

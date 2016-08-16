@@ -20,6 +20,11 @@ class TagAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(models.UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(models.PostHistory)
 class PostHistoryAdmin(admin.ModelAdmin):
     pass

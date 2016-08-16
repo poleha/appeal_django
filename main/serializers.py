@@ -124,9 +124,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = UserProfile
-        fields = ('id', 'vk_id')
+        fields = ('id', 'receive_comments_email')
 
 
 #class SocialLoginSerializer(serializers.Serializer):
@@ -135,13 +136,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializerWithToken(UserSerializer):
     # auth_token = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
+    receive_comments_email = serializers.BooleanField(source='user_profile.receive_comments_email')
 
     class Meta:
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
             User._meta.pk.name,
             User.USERNAME_FIELD,
-            'auth_token'
+            'auth_token',
+            'receive_comments_email',
         )
         read_only_fields = (
             User.USERNAME_FIELD,

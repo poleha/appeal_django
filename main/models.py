@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models.signals import post_save
+
 
 POST_MARK_LIKE = 1
 POST_MARK_DISLIKE = 2
@@ -137,3 +139,14 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='user_profile')
     external_id = models.CharField(max_length=500, null=True, blank=True)
     network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)
+    receive_comments_email = models.BooleanField(default=True)
+
+
+
+def create_user_profile(sender, instance, created, **kwargs):
+    profile, created = UserProfile.objects.get_or_create(user=instance)
+    if created:
+        profile.save()
+
+
+post_save.connect(create_user_profile, sender=User)

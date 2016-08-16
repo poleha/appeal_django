@@ -241,13 +241,14 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.all()
 
-    def retrieve(self, request, *args, **kwargs):
-        user = request.user
+
+    def get_object(self):
+        user = User.objects.get(**{'pk': self.kwargs['pk']})
         if user.is_authenticated():
             user_profile, created = UserProfile.objects.get_or_create(user=user)
-            instance = user_profile
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
+            obj = user_profile
+        return obj
+
 
 
 
