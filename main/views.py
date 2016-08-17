@@ -201,9 +201,9 @@ class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, 
     filter_class = CommentFilter
     queryset = Comment.objects.all()
 
-    subject_template_name = 'email/comments_email_subject.txt'
-    plain_body_template_name = 'email/comments_email_body.txt'
-    html_body_template_name = 'email/comments_email_body.html'
+    subject_template_name = 'comments_email_subject.txt'
+    plain_body_template_name = 'comments_email_body.txt'
+    html_body_template_name = 'comments_email_body.html'
 
     def perform_create(self, serializer):
         if self.request.user.is_authenticated():

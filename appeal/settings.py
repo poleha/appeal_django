@@ -182,9 +182,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 DJOSER = {
     'DOMAIN': 'qblik.ru',
     'SITE_NAME': 'Qblik',
-    #'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    #'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    #'SEND_ACTIVATION_EMAIL': True,
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
     #'PASSWORD_VALIDATORS': [],
     'SET_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
