@@ -127,7 +127,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('id', 'receive_comments_email')
+        fields = ('id', 'receive_comments_email', 'email_confirmed')
 
 
 #class SocialLoginSerializer(serializers.Serializer):
@@ -137,6 +137,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSerializerWithToken(UserSerializer):
     # auth_token = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
     receive_comments_email = serializers.BooleanField(source='user_profile.receive_comments_email')
+    email_confirmed = serializers.BooleanField(source='user_profile.email_confirmed')
 
     class Meta:
         model = User
@@ -145,6 +146,7 @@ class UserSerializerWithToken(UserSerializer):
             User.USERNAME_FIELD,
             'auth_token',
             'receive_comments_email',
+            'email_confirmed',
         )
         read_only_fields = (
             User.USERNAME_FIELD,
@@ -164,3 +166,7 @@ class ActivationSerializer(djoser_serializers.UidAndTokenSerializer):
         return attrs
 
 #djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer
+
+
+
+

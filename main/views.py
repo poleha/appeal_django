@@ -15,7 +15,7 @@ from djoser.utils import SendEmailViewMixin
 from django.conf import settings
 from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
-from rest_framework import generics, status
+from rest_framework import generics, status, views
 
 
 class ReversionMixin:
@@ -288,7 +288,7 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-class SocialLogin(generics.GenericAPIView):
+class SocialLogin(views.APIView):
 
     def post(self, request):
         id = request.data['id']
@@ -328,3 +328,25 @@ class ActivationViewWithToken(ActivationView):
 
 class RegistrationViewWithToken(RegistrationView):
     token_generator = UserActivateTokenGenerator()
+
+
+class SendActivationEmailView(views.APIView, SendEmailViewMixin):
+    subject_template_name = 'activation_email_subject.txt'
+    plain_body_template_name = 'activation_email_body.txt'
+    token_generator = UserActivateTokenGenerator()
+
+    def get_email_context(self, user):
+        context = super().get_email_context(user)
+        context['url'] = settings.DJOSER.get('ACTIVATION_URL').format(**context)
+        return context
+
+    def post(self, request):
+        user = request.user
+        if user.is_authenticated:
+            user_profile = user.user_profile
+            if not user_profile.email_confirmed:
+                user = request.user
+                if user.is_authenticated:
+                    self.send_email(**self.get_send_email_kwargs(user))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

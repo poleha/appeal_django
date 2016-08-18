@@ -18,6 +18,8 @@ urlpatterns = [
     url(r'^auth/social_login/$', views.SocialLogin.as_view()),
     url(r'^auth/activate/$', views.ActivationViewWithToken.as_view()),
     url(r'^auth/register/$', views.RegistrationViewWithToken.as_view()),
+    url(r'^send_user_activation_email/$', views.SendActivationEmailView.as_view()),
+
 
     #url(r'^comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view(), name='comment-detail'),
 #    url(r'^ajax_login/$', views.LoginView.as_view()),
