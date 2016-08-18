@@ -2,8 +2,10 @@ from rest_framework import serializers
 from main.models import Post, PostMark, Tag, Comment, UserProfile
 from django.contrib.auth.models import User
 from djoser import settings as djoser_settings
-#from djoser import serializers as djoser_serializers
+from djoser import serializers as djoser_serializers
 from django.utils.translation import ugettext_lazy as _
+from rest_framework import exceptions
+from djoser.constants import STALE_TOKEN_ERROR
 #from djoser.serializers import UserSerializer
 
 
@@ -83,10 +85,10 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'alias')
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(style={'input_type': 'password'},
-                                     write_only=True,
-                                     validators=djoser_settings.get('PASSWORD_VALIDATORS'))
+class UserRegistrationSerializer(djoser_serializers.UserRegistrationSerializer):
+    #password = serializers.CharField(style={'input_type': 'password'},
+    #                                 write_only=True,
+    #                                 validators=djoser_settings.get('PASSWORD_VALIDATORS'))
 
     password2 = serializers.CharField(style={'input_type': 'password'},
                                      write_only=True,
@@ -112,15 +114,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password2 = data.pop('password2')
         if data['password'] != password2:
             raise serializers.ValidationError(_("Passwords not equal."))
-
-
         return data
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
-        if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
-            user.is_active = False
-            user.save(update_fields=['is_active'])
+        #if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
+        #    user.is_active = False
+        #    user.save(update_fields=['is_active'])
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -151,6 +151,16 @@ class UserSerializerWithToken(UserSerializer):
 
         )
 
+class ActivationSerializer(djoser_serializers.UidAndTokenSerializer):
+    default_error_messages = {
+        'stale_token': STALE_TOKEN_ERROR,
+    }
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        user_profile = self.user.user_profile
+        if user_profile.email_confirmed:
+            raise exceptions.PermissionDenied(self.error_messages['stale_token'])
+        return attrs
 
 #djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer

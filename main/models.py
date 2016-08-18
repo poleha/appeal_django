@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models.signals import post_save
+#from .tokens import UserActivateTokenGenerator
 
 
 POST_MARK_LIKE = 1
@@ -154,6 +155,15 @@ class UserProfile(models.Model):
     external_id = models.CharField(max_length=500, null=True, blank=True)
     network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)
     receive_comments_email = models.BooleanField(default=True)
+    email_confirmed = models.BooleanField(default=False)
+    #activation_token = models.TextField(null=True, blank=True)
+
+    #def save(self, *args, **kwargs):
+    #    user = self.user
+    #    token_generator = UserActivateTokenGenerator()
+    #    token = token_generator.make_token(user)
+    #    self.activation_token = token
+    #    super().save(*args, **kwargs)
 
 
 def create_user_profile(sender, instance, created, **kwargs):

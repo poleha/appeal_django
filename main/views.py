@@ -1,6 +1,5 @@
 from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer
-from rest_framework import generics
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
 from rest_framework.response import Response
@@ -13,8 +12,10 @@ import reversion
 from django.db import transaction
 from rest_framework.pagination import LimitOffsetPagination
 from djoser.utils import SendEmailViewMixin
-from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from djoser.views import ActivationView, RegistrationView
+from .tokens import UserActivateTokenGenerator
+from rest_framework import generics, status
 
 
 class ReversionMixin:
@@ -316,3 +317,14 @@ class SocialLogin(generics.GenericAPIView):
             data=TokenSerializer(token).data,
             status=200,
         )
+
+class ActivationViewWithToken(ActivationView):
+    token_generator = UserActivateTokenGenerator()
+
+    def action(self, serializer):
+        serializer.user.user_profile.email_confirmed = True
+        serializer.user.user_profile.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class RegistrationViewWithToken(RegistrationView):
+    token_generator = UserActivateTokenGenerator()

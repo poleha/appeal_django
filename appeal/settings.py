@@ -190,5 +190,6 @@ DJOSER = {
     'SERIALIZERS': {
         'user_registration': 'main.serializers.UserRegistrationSerializer',
         'user': 'main.serializers.UserSerializerWithToken',
+        'activation': 'main.serializers.ActivationSerializer',
                     },
 }
