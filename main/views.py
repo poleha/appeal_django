@@ -319,9 +319,6 @@ class SocialLogin(SendActivationEmailView):
 
         if users_by_id.exists():
             user = users_by_id[0]
-            if email and user.email != email:
-                user.email = email
-                user.save()
         else:
             if email:
                 users_by_email = User.objects.filter(email=email)
@@ -335,6 +332,10 @@ class SocialLogin(SendActivationEmailView):
                 username += str(k)
                 users_by_username = User.objects.filter(username=username)
             user = User.objects.create(username=username)
+
+        if email and user.email != email:
+            user.email = email
+            user.save()
 
         user_profile, _ = UserProfile.objects.get_or_create(user=user)
         user_profile.external_id = id
