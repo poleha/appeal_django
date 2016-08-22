@@ -19,4 +19,30 @@ msgid "This email already in use."
 msgstr "Этот адрес электронной почты используется."
 
 
+msgid "You're receiving this email because you created an account on %(site_name)s."
+msgstr "Вы получили это сообщение поскольку Вы зарегистрировались на %(site_name)s."
+
+
+msgid "Please go to the following page to activate account:"
+msgstr "Пожалуйста, пройдите по этой ссылке для активации Вашей учетной записи:"
+
+
+msgid "Account activation on %(site_name)s"
+msgstr "Активация учетной записи на %(site_name)s."
+
+
+msgid "You're receiving this email because you requested a password reset for your user account at %(site_name)s."
+msgstr "Вы получили это сообщение, поскольку Вы запросили сброс пароля на %(site_name)s."
+
+
+msgid "Please go to the following page and choose a new password:"
+msgstr "Пожалуйста, пройдите по указанной ссылке и укажите новый пароль:"
+
+
+msgid "Your username, in case you've forgotten:"
+msgstr "Ваше имя пользователя, на случай, если Вы забыли:"
+
+
+msgid "Password reset on %(site_name)s"
+msgstr "Сброс пароля на %(site_name)s."
 
