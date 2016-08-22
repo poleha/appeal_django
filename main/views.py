@@ -341,7 +341,7 @@ class SocialLogin(SendActivationEmailView):
         user_profile.network = network
         user_profile.save()
 
-        if not user_profile.email_confirmed:
+        if user.email and not user_profile.email_confirmed:
             self.send_email(**self.get_send_email_kwargs(user))
 
         token, _ = Token.objects.get_or_create(user=user)
