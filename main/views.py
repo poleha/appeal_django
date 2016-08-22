@@ -286,9 +286,28 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
 
+class SendActivationEmailView(views.APIView, SendEmailViewMixin):
+    subject_template_name = 'activation_email_subject.txt'
+    plain_body_template_name = 'activation_email_body.txt'
+    token_generator = UserActivateTokenGenerator()
+
+    def get_email_context(self, user):
+        context = super().get_email_context(user)
+        context['url'] = settings.DJOSER.get('ACTIVATION_URL').format(**context)
+        return context
+
+    def post(self, request):
+        user = request.user
+        if user.is_authenticated:
+            user_profile = user.user_profile
+            if not user_profile.email_confirmed:
+                user = request.user
+                if user.is_authenticated:
+                    self.send_email(**self.get_send_email_kwargs(user))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialLogin(views.APIView):
+class SocialLogin(SendActivationEmailView):
 
     def post(self, request):
         id = request.data['id']
@@ -322,6 +341,9 @@ class SocialLogin(views.APIView):
         user_profile.network = network
         user_profile.save()
 
+        if not user_profile.email_confirmed:
+            self.send_email(**self.get_send_email_kwargs(user))
+
         token, _ = Token.objects.get_or_create(user=user)
         user_logged_in.send(sender=user.__class__, request=self.request, user=user)
         return Response(
@@ -341,23 +363,5 @@ class RegistrationViewWithToken(RegistrationView):
     token_generator = UserActivateTokenGenerator()
 
 
-class SendActivationEmailView(views.APIView, SendEmailViewMixin):
-    subject_template_name = 'activation_email_subject.txt'
-    plain_body_template_name = 'activation_email_body.txt'
-    token_generator = UserActivateTokenGenerator()
 
-    def get_email_context(self, user):
-        context = super().get_email_context(user)
-        context['url'] = settings.DJOSER.get('ACTIVATION_URL').format(**context)
-        return context
-
-    def post(self, request):
-        user = request.user
-        if user.is_authenticated:
-            user_profile = user.user_profile
-            if not user_profile.email_confirmed:
-                user = request.user
-                if user.is_authenticated:
-                    self.send_email(**self.get_send_email_kwargs(user))
-        return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -165,6 +165,9 @@ class UserProfile(models.Model):
     #    self.activation_token = token
     #    super().save(*args, **kwargs)
 
+    def __str__(self):
+        return self.user.username
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     profile, created = UserProfile.objects.get_or_create(user=instance)
