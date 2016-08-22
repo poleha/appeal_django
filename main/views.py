@@ -294,10 +294,21 @@ class SocialLogin(views.APIView):
         id = request.data['id']
         username = request.data['username']
         network = request.data['network']
+        email = request.data.get('email', None)
         users_by_id = User.objects.filter(user_profile__external_id=id, user_profile__network=network)
+        user = None
+
         if users_by_id.exists():
             user = users_by_id[0]
+            if email and user.email != email:
+                user.email = email
+                user.save()
         else:
+            if email:
+                users_by_email = User.objects.filter(email=email)
+                if users_by_email.exists():
+                    user = users_by_email[0]
+        if not user:
             users_by_username = User.objects.filter(username=username)
             k = 0
             while users_by_username.exists():
