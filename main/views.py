@@ -1,4 +1,4 @@
-from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion
+from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion, SocialAccount
 from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
@@ -315,7 +315,7 @@ class SocialLogin(SendActivationEmailView):
         username = request.data['username']
         network = request.data['network']
         email = request.data.get('email', None)
-        users_by_id = User.objects.filter(user_profile__external_id=id, user_profile__network=network)
+        users_by_id = User.objects.filter(social_accounts__external_id=id, social_accounts__network=network)
         if email:
             users_by_email = User.objects.filter(email=email)
         user = None
@@ -340,10 +340,12 @@ class SocialLogin(SendActivationEmailView):
             user.email = email
             user.save()
 
+        social_account, _ = SocialAccount.objects.get_or_create(user=user)
+        social_account.external_id = id
+        social_account.network = network
+        social_account.save()
+
         user_profile, _ = UserProfile.objects.get_or_create(user=user)
-        user_profile.external_id = id
-        user_profile.network = network
-        user_profile.save()
 
         if user.email and not user_profile.email_confirmed:
             self.send_email(**self.get_send_email_kwargs(user))

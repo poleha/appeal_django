@@ -25,6 +25,10 @@ class UserProfileAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(models.SocialAccount)
+class SocialAccountAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(models.PostHistory)
 class PostHistoryAdmin(admin.ModelAdmin):
     pass

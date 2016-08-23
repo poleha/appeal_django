@@ -152,8 +152,6 @@ SOCIAL_NETWORKS = (
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='user_profile')
-    external_id = models.CharField(max_length=500, null=True, blank=True)
-    network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)
     receive_comments_email = models.BooleanField(default=True)
     email_confirmed = models.BooleanField(default=False)
     #activation_token = models.TextField(null=True, blank=True)
@@ -168,6 +166,15 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
+class SocialAccount(models.Model):
+    user = models.ForeignKey(User, related_name='social_accounts')
+    external_id = models.CharField(max_length=500, null=True, blank=True)
+    network = models.CharField(choices=SOCIAL_NETWORKS, max_length=20)
+
+
+    def __str__(self):
+        return "{} - {}".format(self.user.username, self.network)
 
 def create_user_profile(sender, instance, created, **kwargs):
     profile, created = UserProfile.objects.get_or_create(user=instance)
