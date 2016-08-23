@@ -308,13 +308,9 @@ class SendActivationEmailView(views.APIView, SendEmailViewMixin):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialLogin(SendActivationEmailView):
 
-    def post(self, request):
-        id = request.data['id']
-        username = request.data['username']
-        network = request.data['network']
-        email = request.data.get('email', None)
+class SocialLoginMixin:
+    def login_user(self, id, network, email, username):
         users_by_id = User.objects.filter(social_accounts__external_id=id, social_accounts__network=network)
         if email:
             users_by_email = User.objects.filter(email=email)
@@ -356,6 +352,49 @@ class SocialLogin(SendActivationEmailView):
             data=TokenSerializer(token).data,
             status=200,
         )
+
+class SocialLogin(SendActivationEmailView, SocialLoginMixin):
+
+    def post(self, request):
+        id = request.data['id']
+        username = request.data['username']
+        network = request.data['network']
+        email = request.data.get('email', None)
+        return self.login_user(id, network, email, username)
+
+
+class VkLogin(SendActivationEmailView, SocialLoginMixin):
+    def post(self, request):
+        import requests
+        from .vk_key import APP_SECRET
+        code = request.data['code']
+        network = 'vk'
+        redirect_url = request.data['redirect_url']
+        url = "https://oauth.vk.com/access_token?client_id=5414620&client_secret={}&redirect_uri={}&code={}".format(APP_SECRET, redirect_url, code)
+        r = requests.post(url)
+        if r.status_code == 200:
+            json1 = r.json()
+            user_id = json1['user_id']
+            #token = json['access_token']
+            email = json1['email']
+            url = 'https://api.vk.com/method/users.get?user_ids={}&v=5.53'.format(user_id)
+            r = requests.post(url)
+            if r.status_code == 200:
+                json2 = r.json()
+                user_info = json2['response'][0]
+                username = "{} {}".format(user_info['first_name'], user_info['last_name'])
+                return self.login_user(user_id, network, email, username)
+
+
+
+
+        #token, _ = Token.objects.get_or_create(user=user)
+        #user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+        #return Response(
+        #    data=TokenSerializer(token).data,
+        #    status=200,
+        #)
+
 
 class ActivationViewWithToken(ActivationView):
     token_generator = UserActivateTokenGenerator()

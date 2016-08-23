@@ -16,6 +16,7 @@ urlpatterns = [
 
     url(r'^user_profile/(?P<pk>[0-9]+)/$', views.UserProfileDetail.as_view()),
     url(r'^auth/social_login/$', views.SocialLogin.as_view()),
+    url(r'^auth/vk_login/$', views.VkLogin.as_view()),
     url(r'^auth/activate/$', views.ActivationViewWithToken.as_view()),
     url(r'^auth/register/$', views.RegistrationViewWithToken.as_view()),
     url(r'^send_user_activation_email/$', views.SendActivationEmailView.as_view()),
