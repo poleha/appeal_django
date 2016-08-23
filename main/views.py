@@ -17,6 +17,7 @@ from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
 from rest_framework import generics, status, views
 from rest_framework.serializers import ValidationError
+from django.contrib.auth import authenticate
 
 
 class ReversionMixin:
@@ -386,16 +387,6 @@ class VkLogin(SendActivationEmailView, SocialLoginMixin):
                 return self.login_user(user_id, network, email, username)
 
 
-
-
-        #token, _ = Token.objects.get_or_create(user=user)
-        #user_logged_in.send(sender=user.__class__, request=self.request, user=user)
-        #return Response(
-        #    data=TokenSerializer(token).data,
-        #    status=200,
-        #)
-
-
 class ActivationViewWithToken(ActivationView):
     token_generator = UserActivateTokenGenerator()
 
@@ -404,9 +395,21 @@ class ActivationViewWithToken(ActivationView):
         serializer.user.user_profile.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class RegistrationViewWithToken(RegistrationView):
     token_generator = UserActivateTokenGenerator()
 
 
+class SetEmail(SendActivationEmailView):
+    def post(self, request):
+        email = request.data['email']
+        password = request.data['password']
+        user = self.request.user
+        check_user = authenticate(username=user.username, password=password)
+        if user and user.is_authenticated() and user==check_user and not user.email:
+            user.email = email
+            user.save()
+            self.send_email(**self.get_send_email_kwargs(user))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 

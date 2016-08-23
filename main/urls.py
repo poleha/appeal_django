@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^auth/activate/$', views.ActivationViewWithToken.as_view()),
     url(r'^auth/register/$', views.RegistrationViewWithToken.as_view()),
     url(r'^send_user_activation_email/$', views.SendActivationEmailView.as_view()),
+    url(r'^auth/set_email/$', views.SetEmail.as_view()),
 
 
     #url(r'^comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view(), name='comment-detail'),

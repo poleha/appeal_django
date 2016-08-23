@@ -147,6 +147,7 @@ class UserSerializerWithToken(UserSerializer):
             'auth_token',
             'receive_comments_email',
             'email_confirmed',
+            'email'
         )
         read_only_fields = (
             User.USERNAME_FIELD,
