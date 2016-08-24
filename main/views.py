@@ -403,7 +403,7 @@ class RegistrationViewWithToken(RegistrationView):
 class SetEmail(SendActivationEmailView):
     serializer_class = SetEmailSerializer
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         user = self.request.user
         serializer = self.serializer_class(data=request.data, instance=user)
         if serializer.is_valid():
