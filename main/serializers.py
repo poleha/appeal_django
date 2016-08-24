@@ -6,6 +6,7 @@ from djoser import serializers as djoser_serializers
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions
 from djoser.constants import STALE_TOKEN_ERROR
+from django.contrib.auth import authenticate
 #from djoser.serializers import UserSerializer
 
 
@@ -166,7 +167,25 @@ class ActivationSerializer(djoser_serializers.UidAndTokenSerializer):
             raise exceptions.PermissionDenied(self.error_messages['stale_token'])
         return attrs
 
-#djoser_serializers.UserRegistrationSerializer = UserRegistrationSerializer
+
+class SetEmailSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        user = authenticate(username=self.instance.username, password=attrs['password'])
+        if user and not user.email:
+            users_by_email = User.objects.filter(email=attrs['email'])
+            if not users_by_email.exists():
+                return attrs
+
+        raise serializers.ValidationError('Указанный электронный адрес не может быть установлен')
+
 
 
 

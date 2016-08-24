@@ -1,5 +1,5 @@
 from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion, SocialAccount
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SetEmailSerializer
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
 from rest_framework.response import Response
@@ -17,7 +17,6 @@ from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
 from rest_framework import generics, status, views
 from rest_framework.serializers import ValidationError
-from django.contrib.auth import authenticate
 
 
 class ReversionMixin:
@@ -365,6 +364,7 @@ class SocialLogin(SendActivationEmailView, SocialLoginMixin):
 
 
 class VkLogin(SendActivationEmailView, SocialLoginMixin):
+
     def post(self, request):
         import requests
         from .vk_key import APP_SECRET
@@ -401,15 +401,20 @@ class RegistrationViewWithToken(RegistrationView):
 
 
 class SetEmail(SendActivationEmailView):
-    def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
+    serializer_class = SetEmailSerializer
+
+    def patch(self, request):
         user = self.request.user
-        check_user = authenticate(username=user.username, password=password)
-        if user and user.is_authenticated() and user==check_user and not user.email:
-            user.email = email
+        serializer = self.serializer_class(data=request.data, instance=user)
+        if serializer.is_valid():
+            user.email = serializer.validated_data['email']
             user.save()
             self.send_email(**self.get_send_email_kwargs(user))
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
 
+            )
 
