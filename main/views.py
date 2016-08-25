@@ -335,6 +335,7 @@ class SocialLoginMixin:
         if email and user.email != email:
             user.email = email
             user.save()
+            self.send_email(**self.get_send_email_kwargs(user))
 
         social_account, _ = SocialAccount.objects.get_or_create(user=user)
         social_account.external_id = id
@@ -342,9 +343,6 @@ class SocialLoginMixin:
         social_account.save()
 
         user_profile, _ = UserProfile.objects.get_or_create(user=user)
-
-        if user.email and not user_profile.email_confirmed:
-            self.send_email(**self.get_send_email_kwargs(user))
 
         token, _ = Token.objects.get_or_create(user=user)
         user_logged_in.send(sender=user.__class__, request=self.request, user=user)
