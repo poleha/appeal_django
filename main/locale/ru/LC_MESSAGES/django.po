@@ -46,3 +46,34 @@ msgstr "Ваше имя пользователя, на случай, если В
 msgid "Password reset on %(site_name)s"
 msgstr "Сброс пароля на %(site_name)s."
 
+
+msgid "Unable to login with provided credentials."
+msgstr "Не удалось авторизоваться с предоставленными данными."
+
+
+msgid "User account is disabled."
+msgstr "Учетная запись заблокирована."
+
+
+msgid "Invalid token for given user."
+msgstr "При попытке авторизации произошла ошибка(некорректный токен)."
+
+
+msgid "Invalid user id or user doesn't exist."
+msgstr "Некорректный ключ пользователя или пользователь не существует."
+
+
+msgid "Stale token for given user."
+msgstr "При попытке авторизации произошла ошибка(токен устарел)."
+
+
+msgid "The two password fields didn't match."
+msgstr "Пароли не совпадают."
+
+
+msgid "The two {0} fields didn't match."
+msgstr "Два поля {0} не совпадают."
+
+
+msgid "Invalid password."
+msgstr "Некорректный пароль."
