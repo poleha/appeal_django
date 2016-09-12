@@ -48,6 +48,7 @@ class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     rated = serializers.IntegerField(required=False)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     created = DateTimeFielTZ(format="%d.%m.%Y %H:%M:%S", required=False, read_only=True)
+    body = serializers.CharField(required=True, min_length=300)
 
     class Meta:
         model = Post
