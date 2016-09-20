@@ -1,5 +1,5 @@
 from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion, SocialAccount
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SetEmailSerializer
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SetEmailSerializer, PostRateSerializer
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
 from rest_framework.response import Response
@@ -251,7 +251,7 @@ class AuthorOnlyCommentDetail(AuthorOnlyMixin, CommentDetail):
 
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = PostSerializer
+    serializer_class = PostRateSerializer
 
     def perform_update(self, post):
         user = self.request.user

@@ -44,6 +44,9 @@ class CommentSerializer(UsernameMixin, serializers.ModelSerializer):
         fields = ('id', 'user','username', 'post', 'body', 'created', 'email')
 
 
+
+
+
 class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     rated = serializers.IntegerField(required=False)
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -53,6 +56,10 @@ class PostSerializer(UsernameMixin, serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'user', 'username', 'body', 'rated', 'created', 'tags', 'comment_count', 'comments', 'email', 'liked_count', 'disliked_count')
+
+
+class PostRateSerializer(PostSerializer):
+    body = serializers.CharField(required=False)
 
 
 """
