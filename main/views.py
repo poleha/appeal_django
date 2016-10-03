@@ -17,6 +17,8 @@ from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
 from rest_framework import generics, status, views
 from rest_framework.serializers import ValidationError
+from .permissions import create_permission_for_owner
+from rest_framework.permissions import IsAuthenticated
 
 
 class ReversionMixin:
@@ -110,7 +112,6 @@ class AuthorOnlyMixin(generics.GenericAPIView):
 
 class PostDetail(PostViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
-
 
 
 class AuthorOnlyPostDetail(AuthorOnlyMixin, PostDetail):
@@ -252,26 +253,26 @@ class AuthorOnlyCommentDetail(AuthorOnlyMixin, CommentDetail):
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostRateSerializer
+    permission_classes = (IsAuthenticated, create_permission_for_owner(allow=False))
 
     def perform_update(self, post):
         user = self.request.user
-        if user and user.is_authenticated():
-            mark_type = post._validated_data['rated']
-            create = True
-            if mark_type:
-                existing_marks = PostMark.objects.filter(user=user, post=post.instance)
-                if existing_marks.count() > 1:
-                    existing_marks.delete()
-                elif existing_marks.count() == 1:
-                    existing_mark = existing_marks[0]
-                    if existing_mark.mark_type == mark_type:
-                        existing_mark.delete()
-                        create = False
-                        post.instance.rated = 0
-                if create:
-                    post_mark, created = PostMark.objects.get_or_create(user=user, post=post.instance,
-                                                                        mark_type=mark_type)
-                    post.instance.rated = mark_type
+        mark_type = post._validated_data['rated']
+        create = True
+        if mark_type:
+            existing_marks = PostMark.objects.filter(user=user, post=post.instance)
+            if existing_marks.count() > 1:
+                existing_marks.delete()
+            elif existing_marks.count() == 1:
+                existing_mark = existing_marks[0]
+                if existing_mark.mark_type == mark_type:
+                    existing_mark.delete()
+                    create = False
+                    post.instance.rated = 0
+            if create:
+                post_mark, created = PostMark.objects.get_or_create(user=user, post=post.instance,
+                                                                    mark_type=mark_type)
+                post.instance.rated = mark_type
 
 
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
