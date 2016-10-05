@@ -15,31 +15,17 @@ from djoser.utils import SendEmailViewMixin
 from django.conf import settings
 from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
-from rest_framework import generics, status, views
+from rest_framework import generics, status, views, exceptions
 from rest_framework.serializers import ValidationError
 from .permissions import create_permission_for_owner, IsOwnerOnly
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 
 
-class ReversionMixin:
-    def dispatch(self, *args, **kwargs):
-        with transaction.atomic(), reversion.create_revision():
-            response = super().dispatch(*args, **kwargs)
-            if not self.request.user.is_anonymous():
-                reversion.set_user(self.request.user)
-            return response
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
 
-
-
-class PostFilter(filters.FilterSet):
-    id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
-    body = django_filters.CharFilter(name="body", lookup_type='icontains')
-    class Meta:
-        model = Post
-        fields = ['id_gte', 'tags__alias', 'id', 'body', 'user']
-
-
-class PostViewMixin:
     def get_queryset(self):
         queryset = Post.objects.order_by('-history__last_action')
         user = self.request.user
@@ -76,30 +62,62 @@ class PostViewMixin:
         self.save_version(serializer)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        serializer.save(user=self.request.user)
         self.save_version(serializer)
 
-
-class PostList(PostViewMixin, ReversionMixin, generics.ListCreateAPIView):
-    serializer_class = PostSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_class = PostFilter
-
-    def perform_create(self, post):
-        if self.request.user.is_authenticated():
-            user = self.request.user
-            post.save(user=user, username=user.username)
+    def get_permissions(self):
+        if self.action == 'rate':
+            return [create_permission_for_owner(allow=False)()]
         else:
-            post.save()
+            return [create_permission_for_owner(included_methods=('PUT', 'PATCH'))()]
+
+    @detail_route(('PATCH', ))
+    def rate(self, request, *args, **kwargs):
+        user = request.user
+        post = self.get_object()
+        if user.is_authenticated() and user == post.user:
+            raise exceptions.PermissionDenied(detail='Unable to rate own post')
+        user = self.request.user
+        mark_type = request.data['rated']
+        create = True
+        if mark_type:
+            existing_marks = PostMark.objects.filter(user=user, post=post)
+            if existing_marks.count() > 1:
+                existing_marks.delete()
+            elif existing_marks.count() == 1:
+                existing_mark = existing_marks[0]
+                if existing_mark.mark_type == mark_type:
+                    existing_mark.delete()
+                    create = False
+                    post.rated = 0
+            if create:
+                post_mark, created = PostMark.objects.get_or_create(user=user, post=post,
+                                                                    mark_type=mark_type)
+                post.rated = mark_type
+
+        serializer = PostSerializer(post)
+
+        return Response(serializer.data)
 
 
-class PostDetail(PostViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = PostSerializer
 
 
-class AuthorOnlyPostDetail(PostDetail):
-    permission_classes = (IsOwnerOnly, )
+class ReversionMixin:
+    def dispatch(self, *args, **kwargs):
+        with transaction.atomic(), reversion.create_revision():
+            response = super().dispatch(*args, **kwargs)
+            if not self.request.user.is_anonymous():
+                reversion.set_user(self.request.user)
+            return response
 
+
+
+class PostFilter(filters.FilterSet):
+    id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
+    body = django_filters.CharFilter(name="body", lookup_type='icontains')
+    class Meta:
+        model = Post
+        fields = ['id_gte', 'tags__alias', 'id', 'body', 'user']
 
 
 class UserFilter(filters.FilterSet):
@@ -232,30 +250,6 @@ class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDes
 
 class AuthorOnlyCommentDetail(CommentDetail):
     permission_classes = (IsOwnerOnly, )
-
-
-class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = PostRateSerializer
-    permission_classes = (IsAuthenticated, create_permission_for_owner(allow=False))
-
-    def perform_update(self, post):
-        user = self.request.user
-        mark_type = post._validated_data['rated']
-        create = True
-        if mark_type:
-            existing_marks = PostMark.objects.filter(user=user, post=post.instance)
-            if existing_marks.count() > 1:
-                existing_marks.delete()
-            elif existing_marks.count() == 1:
-                existing_mark = existing_marks[0]
-                if existing_mark.mark_type == mark_type:
-                    existing_mark.delete()
-                    create = False
-                    post.instance.rated = 0
-            if create:
-                post_mark, created = PostMark.objects.get_or_create(user=user, post=post.instance,
-                                                                    mark_type=mark_type)
-                post.instance.rated = mark_type
 
 
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):

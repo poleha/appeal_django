@@ -22,7 +22,9 @@ class DateTimeFielTZ(serializers.DateTimeField):
 class UsernameMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._user = kwargs['context']['request'].user
+        context = kwargs.get('context', None)
+        if context:
+            self._user = kwargs['context']['request'].user
 
     def validate_username(self, value):
         if self._user.is_authenticated():
