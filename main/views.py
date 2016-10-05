@@ -16,13 +16,22 @@ from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
 from rest_framework import generics, status, views, exceptions
 from rest_framework.serializers import ValidationError
-from .permissions import create_permission_for_owner, IsOwnerOnly
+from .permissions import create_permission_for_owner
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from .filters import UserFilter, PostFilter, CommentFilter
 
 
-class PostViewSet(viewsets.ModelViewSet):
+class ReversionMixin:
+    def dispatch(self, *args, **kwargs):
+        with transaction.atomic(), reversion.create_revision():
+            response = super().dispatch(*args, **kwargs)
+            if not self.request.user.is_anonymous():
+                reversion.set_user(self.request.user)
+            return response
+
+
+class PostViewSet(ReversionMixin, viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -123,15 +132,17 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = UnlimitedPagination
 
 
-class ReversionMixin:
-    def dispatch(self, *args, **kwargs):
-        with transaction.atomic(), reversion.create_revision():
-            response = super().dispatch(*args, **kwargs)
-            if not self.request.user.is_anonymous():
-                reversion.set_user(self.request.user)
-            return response
+class CommentViewSet(ReversionMixin, viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = CommentFilter
+    queryset = Comment.objects.all()
+    permission_classes = (create_permission_for_owner(included_methods=('PUT', 'PATCH')), )
 
-class CommentViewMixin:
+    subject_template_name = 'comments_email_subject.txt'
+    plain_body_template_name = 'comments_email_body.txt'
+    html_body_template_name = 'comments_email_body.html'
+
     def save_version(self, serializer):
         comment = serializer.instance
         comment_version = CommentVersion.objects.create(
@@ -142,26 +153,6 @@ class CommentViewMixin:
             body=comment.body,
             email=comment.email
         )
-
-
-    def perform_update(self, serializer):
-        super().perform_update(serializer)
-        self.save_version(serializer)
-
-    def perform_create(self, serializer):
-        super().perform_create(serializer)
-        self.save_version(serializer)
-
-
-class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, SendEmailViewMixin):
-    serializer_class = CommentSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_class = CommentFilter
-    queryset = Comment.objects.all()
-
-    subject_template_name = 'comments_email_subject.txt'
-    plain_body_template_name = 'comments_email_body.txt'
-    html_body_template_name = 'comments_email_body.html'
 
     def perform_create(self, serializer):
         if self.request.user.is_authenticated():
@@ -177,13 +168,18 @@ class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, 
         if user != post_user and user_profile.receive_comments_email:
             self.send_email(**self.get_send_email_kwargs(post_user, comment))
 
+        self.save_version(serializer)
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.save_version(serializer)
+
     def get_send_email_kwargs(self, user, comment):
         return {
             'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', None),
             'to_email': user.email,
             'context': self.get_email_context(comment),
         }
-
 
     def get_email_context(self, comment):
         domain = settings.DJOSER.get('DOMAIN')
@@ -194,16 +190,6 @@ class CommentList(CommentViewMixin, ReversionMixin, generics.ListCreateAPIView, 
             'site_name': site_name,
             'protocol': 'https' if self.request.is_secure() else 'http',
         }
-
-
-class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-
-
-class AuthorOnlyCommentDetail(CommentDetail):
-    permission_classes = (IsOwnerOnly, )
 
 
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):

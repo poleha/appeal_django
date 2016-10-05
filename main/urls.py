@@ -4,13 +4,13 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'posts', views.PostViewSet)
+router.register(r'comments', views.CommentViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'post_marks', views.PostMarkViewSet)
 
+
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^comments/$', views.CommentList.as_view()),
-    url(r'^comments/(?P<pk>[0-9]+)/$', views.AuthorOnlyCommentDetail.as_view()),
     url(r'^user_profile/(?P<pk>[0-9]+)/$', views.UserProfileDetail.as_view()),
     url(r'^auth/social_login/$', views.SocialLogin.as_view()),
     url(r'^auth/vk_login/$', views.VkLogin.as_view()),
