@@ -4,13 +4,14 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'posts', views.PostViewSet)
+router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
     #url(r'^posts/$', views.PostList.as_view()),
     #url(r'^posts/(?P<pk>[0-9]+)/$', views.AuthorOnlyPostDetail.as_view()),
-    url(r'^users/$', views.UserList.as_view()),
-    url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
+    #url(r'^users/$', views.UserList.as_view()),
+    #url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
     url(r'^post_marks/$', views.PoskMarkList.as_view()),
     url(r'^post_marks/(?P<pk>[0-9]+)/$', views.PostMarkDetail.as_view()),
     url(r'^tags/$', views.TagList.as_view()),

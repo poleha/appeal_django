@@ -1,12 +1,11 @@
 from main.models import Post, PostMark, Tag, Comment, UserProfile, POST_MARK_LIKE, POST_MARK_DISLIKE, PostVersion, CommentVersion, SocialAccount
-from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SetEmailSerializer, PostRateSerializer
+from main.serializers import PostSerializer, UserSerializer, PostMarkSerializer, TagSerializer, CommentSerializer, UserProfileSerializer, SetEmailSerializer
 from django.contrib.auth.models import User
 from django.db.models import Case, Value, When, IntegerField, Q
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import user_logged_in
 from djoser.serializers import TokenSerializer
-import django_filters
 from rest_framework import filters
 import reversion
 from django.db import transaction
@@ -20,11 +19,14 @@ from rest_framework.serializers import ValidationError
 from .permissions import create_permission_for_owner, IsOwnerOnly
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
+from .filters import UserFilter, PostFilter, CommentFilter
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = PostFilter
 
     def get_queryset(self):
         queryset = Post.objects.order_by('-history__last_action')
@@ -100,8 +102,6 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-
-
 class ReversionMixin:
     def dispatch(self, *args, **kwargs):
         with transaction.atomic(), reversion.create_revision():
@@ -111,32 +111,10 @@ class ReversionMixin:
             return response
 
 
-
-class PostFilter(filters.FilterSet):
-    id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
-    body = django_filters.CharFilter(name="body", lookup_type='icontains')
-    class Meta:
-        model = Post
-        fields = ['id_gte', 'tags__alias', 'id', 'body', 'user']
-
-
-class UserFilter(filters.FilterSet):
-    #id_gte = django_filters.NumberFilter(name="id", lookup_type='gte')
-    #body = django_filters.CharFilter(name="body", lookup_type='icontains')
-    #tags_alias = django_filters.CharFilter(name="id", lookup_type='gte')
-    class Meta:
-        model = User
-        fields = ['id', 'username']
-
-class UserList(generics.ListAPIView):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     filter_class = UserFilter
     filter_backends = (filters.DjangoFilterBackend,)
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
@@ -171,11 +149,6 @@ class TagDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
-
-class CommentFilter(filters.FilterSet):
-    class Meta:
-        model = Comment
-        fields = ['post', 'user', 'id']
 
 class CommentViewMixin:
     def save_version(self, serializer):

@@ -60,21 +60,6 @@ class PostSerializer(UsernameMixin, serializers.ModelSerializer):
         fields = ('id', 'user', 'username', 'body', 'rated', 'created', 'tags', 'comment_count', 'comments', 'email', 'liked_count', 'disliked_count')
 
 
-class PostRateSerializer(PostSerializer):
-    body = serializers.CharField(required=False)
-
-
-"""
-class PostDetailSerializer(serializers.ModelSerializer):
-    rated = serializers.BooleanField(read_only=True)
-    #comments = serializers.HyperlinkedRelatedField(many=True, view_name='comment-detail', read_only=True)
-    #comments = CommentSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Post
-        fields = ('id', 'user', 'username', 'body', 'liked', 'disliked', 'rated', 'created', 'tags', 'comments')
-"""
-
 
 class UserSerializer(serializers.ModelSerializer):
     #posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
@@ -139,10 +124,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('id', 'receive_comments_email', 'email_confirmed')
-
-
-#class SocialLoginSerializer(serializers.Serializer):
-#    vk_id = serializers.CharField(required=False)
 
 
 class UserSerializerWithToken(UserSerializer):
