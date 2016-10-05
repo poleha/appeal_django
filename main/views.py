@@ -9,7 +9,7 @@ from djoser.serializers import TokenSerializer
 from rest_framework import filters
 import reversion
 from django.db import transaction
-from rest_framework.pagination import LimitOffsetPagination
+from .pagination import UnlimitedPagination
 from djoser.utils import SendEmailViewMixin
 from django.conf import settings
 from djoser.views import ActivationView, RegistrationView
@@ -102,15 +102,6 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ReversionMixin:
-    def dispatch(self, *args, **kwargs):
-        with transaction.atomic(), reversion.create_revision():
-            response = super().dispatch(*args, **kwargs)
-            if not self.request.user.is_anonymous():
-                reversion.set_user(self.request.user)
-            return response
-
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     filter_class = UserFilter
@@ -118,7 +109,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class PoskMarkList(generics.ListCreateAPIView):
+class PostMarkViewSet(viewsets.ModelViewSet):
     queryset = PostMark.objects.all()
     serializer_class = PostMarkSerializer
 
@@ -126,29 +117,19 @@ class PoskMarkList(generics.ListCreateAPIView):
         user = self.request.user
         post_mark.save(user=user)
 
-
-class PostMarkDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = PostMark.objects.all()
-    serializer_class = PostMarkSerializer
-
-
-
-class UnlimitedPagination(LimitOffsetPagination):
-    default_limit = 100
-    max_limit = 100
-
-
-class TagList(generics.ListAPIView):
+class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
     pagination_class = UnlimitedPagination
 
 
-
-class TagDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-
+class ReversionMixin:
+    def dispatch(self, *args, **kwargs):
+        with transaction.atomic(), reversion.create_revision():
+            response = super().dispatch(*args, **kwargs)
+            if not self.request.user.is_anonymous():
+                reversion.set_user(self.request.user)
+            return response
 
 class CommentViewMixin:
     def save_version(self, serializer):
