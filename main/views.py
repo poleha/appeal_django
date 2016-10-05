@@ -17,7 +17,7 @@ from djoser.views import ActivationView, RegistrationView
 from .tokens import UserActivateTokenGenerator
 from rest_framework import generics, status, views
 from rest_framework.serializers import ValidationError
-from .permissions import create_permission_for_owner
+from .permissions import create_permission_for_owner, IsOwnerOnly
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -93,29 +93,12 @@ class PostList(PostViewMixin, ReversionMixin, generics.ListCreateAPIView):
             post.save()
 
 
-class AuthorOnlyPermission:
-    def has_permission(self, request, view):
-        """
-        Return `True` if permission is granted, `False` otherwise.
-        """
-        return True
-
-    def has_object_permission(self, request, view, obj):
-        return obj.user_id == request.user.pk
-
-class AuthorOnlyMixin(generics.GenericAPIView):
-    def get_permissions(self):
-        permissions = super().get_permissions()
-        permissions.append(AuthorOnlyPermission())
-        return permissions
-
-
 class PostDetail(PostViewMixin, ReversionMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
 
 
-class AuthorOnlyPostDetail(AuthorOnlyMixin, PostDetail):
-    pass
+class AuthorOnlyPostDetail(PostDetail):
+    permission_classes = (IsOwnerOnly, )
 
 
 
@@ -247,8 +230,8 @@ class CommentDetail(CommentViewMixin, ReversionMixin, generics.RetrieveUpdateDes
 
 
 
-class AuthorOnlyCommentDetail(AuthorOnlyMixin, CommentDetail):
-    pass
+class AuthorOnlyCommentDetail(CommentDetail):
+    permission_classes = (IsOwnerOnly, )
 
 
 class RatePostView(PostViewMixin, generics.RetrieveUpdateDestroyAPIView):

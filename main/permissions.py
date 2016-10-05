@@ -17,3 +17,4 @@ def create_permission_for_owner(excluded_methods=None, included_methods=None, al
 
 IsOwnerOrReadOnly = create_permission_for_owner('GET')
 
+IsOwnerOnly = create_permission_for_owner()
