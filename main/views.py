@@ -266,7 +266,7 @@ class SocialLoginMixin:
         user_logged_in.send(sender=user.__class__, request=self.request, user=user)
         return Response(
             data=TokenSerializer(token).data,
-            status=200,
+            status=status.HTTP_200_OK,
         )
 
 class SocialLogin(SendActivationEmailView, SocialLoginMixin):
@@ -289,14 +289,14 @@ class VkLogin(SendActivationEmailView, SocialLoginMixin):
         redirect_url = request.data['redirect_url']
         url = "https://oauth.vk.com/access_token?client_id=5414620&client_secret={}&redirect_uri={}&code={}".format(APP_SECRET, redirect_url, code)
         r = requests.post(url)
-        if r.status_code == 200:
+        if r.status_code == status.HTTP_200_OK:
             json1 = r.json()
             user_id = json1['user_id']
             #token = json['access_token']
             email = json1['email']
             url = 'https://api.vk.com/method/users.get?user_ids={}&v=5.53'.format(user_id)
             r = requests.post(url)
-            if r.status_code == 200:
+            if r.status_code == status.HTTP_200_OK:
                 json2 = r.json()
                 user_info = json2['response'][0]
                 username = "{} {}".format(user_info['first_name'], user_info['last_name'])
